@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>داشبورد جامع مدیریتی حسابداری | با API زنده بازار آزاد</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+:root{--primary:#4f46e5;--primary-light:#6366f1;--secondary:#0ea5e9;--success:#10b981;--danger:#ef4444;--warning:#f59e0b;--info:#0284c7;--purple:#8b5cf6;--bg:#f1f5f9;--card:#ffffff;--text:#0f172a;--text-light:#64748b;--border:#e2e8f0;--sidebar:#0f172a;--radius:18px;--shadow:0 4px 6px -1px rgba(0,0,0,0.04),0 2px 4px -1px rgba(0,0,0,0.02);--shadow-hover:0 20px 25px -5px rgba(0,0,0,0.08),0 10px 10px -5px rgba(0,0,0,0.04);--narrative-bg:linear-gradient(135deg,#0f172a 0%,#1e293b 100%)}
+[data-theme="dark"]{--bg:#0f172a;--card:#1e293b;--text:#f1f5f9;--text-light:#94a3b8;--border:#334155;--sidebar:#020617;--shadow:0 4px 6px -1px rgba(0,0,0,0.2),0 2px 4px -1px rgba(0,0,0,0.1);--shadow-hover:0 20px 25px -5px rgba(0,0,0,0.3),0 10px 10px -5px rgba(0,0,0,0.2);--narrative-bg:linear-gradient(135deg,#020617 0%,#334155 100%)}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Vazirmatn',sans-serif}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;transition:background .3s,color .3s}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+.ticker-wrapper{position:relative;margin-bottom:24px}.currency-ticker{background:linear-gradient(90deg,#0f172a 0%,#1e293b 50%,#0f172a 100%);color:#f1f5f9;padding:14px 0;overflow:hidden;white-space:nowrap;border-radius:12px;box-shadow:var(--shadow);border:1px solid #334155;position:relative}
+.ticker-track{display:inline-flex;white-space:nowrap;will-change:transform}.ticker-item{margin:0 20px;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:8px}
+.ticker-item i{color:#fbbf24;width:18px;text-align:center}.ticker-item span.label{color:#cbd5e1}
+.ticker-price-pill{background:#fff;color:#000;padding:3px 10px;border-radius:6px;font-weight:800;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
+.ticker-change{font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px;background:rgba(16,185,129,0.2);color:#4ade80}.ticker-change.down{background:rgba(239,68,68,0.2);color:#f87171}
+.ticker-controls{position:absolute;left:10px;top:50%;transform:translateY(-50%);display:flex;gap:8px;z-index:10;background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:8px}
+.ticker-ctrl-btn{background:rgba(255,255,255,0.1);border:none;color:#fff;cursor:pointer;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px}.ticker-ctrl-btn:hover{background:rgba(255,255,255,0.2)}
+.show-ticker-btn{background:var(--card);border:1px solid var(--border);color:var(--text);padding:12px 18px;border-radius:12px;cursor:pointer;margin-bottom:24px;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;width:100%;justify-content:center}
+.org-field-container{display:flex;align-items:center;gap:16px}.org-select-box{background:var(--bg);padding:8px 16px;border-radius:12px;border:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.org-select-box i{color:var(--primary)}.org-select-box select{border:none;background:transparent;outline:none;font-family:'Vazirmatn';font-weight:700;font-size:15px;color:var(--text);cursor:pointer;width:180px}
+.guide-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);backdrop-filter:blur(3px);z-index:9998;opacity:0;pointer-events:none;transition:.3s}.guide-overlay.active{opacity:1;pointer-events:auto}
+.guide-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.9);background:var(--card);border-radius:20px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);width:500px;max-width:90vw;z-index:9999;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(0.34,1.56,0.64,1);overflow:hidden;border:1px solid var(--border)}.guide-panel.active{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.guide-header{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;padding:24px;display:flex;align-items:center;gap:16px}.guide-icon-box{width:56px;height:56px;background:rgba(255,255,255,0.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px}.guide-title{font-size:20px;font-weight:800}.guide-subtitle{font-size:13px;opacity:0.9;margin-top:4px}
+.guide-body{padding:24px;max-height:60vh;overflow-y:auto}.guide-section{margin-bottom:20px}.guide-section h4{font-size:14px;font-weight:700;color:var(--primary);margin-bottom:8px;display:flex;align-items:center;gap:8px}.guide-section p{font-size:14px;color:var(--text-light);line-height:2;text-align:justify}
+.guide-formula{background:var(--bg);padding:14px 18px;border-radius:12px;font-family:monospace;font-size:15px;font-weight:600;color:var(--primary);text-align:center;margin:10px 0;border:1px dashed var(--border)}
+.guide-tips{background:rgba(16,185,129,0.1);padding:16px;border-radius:12px;border-right:4px solid var(--success);margin-top:16px}.guide-tips h5{font-size:13px;font-weight:700;color:var(--success);margin-bottom:6px;display:flex;align-items:center;gap:6px}.guide-tips p{font-size:13px;color:var(--text);line-height:1.8}
+.guide-close{position:absolute;top:16px;left:16px;width:36px;height:36px;background:rgba(255,255,255,0.2);border:none;border-radius:50%;color:#fff;cursor:pointer;font-size:16px;transition:.2s}.guide-close:hover{background:rgba(255,255,255,0.3);transform:rotate(90deg)}
+.card-hint{position:absolute;top:8px;left:8px;width:24px;height:24px;background:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-light);opacity:0;transition:.2s;z-index:5}.card:hover .card-hint{opacity:1}
+.ai-prompt-btn{background:linear-gradient(135deg,#10b981,#0ea5e9);color:#fff;border:none;padding:14px 24px;border-radius:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:15px;margin:24px auto 0;box-shadow:0 4px 12px rgba(16,185,129,.3);transition:.2s}.ai-prompt-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(16,185,129,.4)}
+.ai-prompt-text{width:100%;height:300px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;font-family:monospace;font-size:13px;color:var(--text);resize:none;outline:none;line-height:1.8}
+.ai-copy-btn{margin-top:16px;background:var(--primary);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;width:100%;justify-content:center;transition:.2s}.ai-copy-btn:hover{background:var(--primary-light)}
+.report-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:30px 0}
+.report-modal.active{display:flex}
+.report-modal-content{width:800px;max-width:95%;background:#fff;border-radius:12px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);position:relative;overflow:hidden;margin-bottom:50px}
+.report-modal-header{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;border-radius:12px 12px 0 0;position:sticky;top:0;z-index:10}
+.report-modal-header h2{font-size:18px;font-weight:800;display:flex;align-items:center;gap:10px}
+.report-modal-actions{display:flex;gap:10px}
+.report-action-btn{background:rgba(255,255,255,0.2);border:none;color:#fff;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+.report-action-btn:hover{background:rgba(255,255,255,0.3)}
+.rpt-body{padding:40px;color:#000;line-height:1.8}
+.rpt-body h1{text-align:center;border-bottom:3px solid #4f46e5;padding-bottom:15px;margin-bottom:30px;color:#4f46e5}
+.rpt-body h2{color:#4f46e5;border-right:5px solid #4f46e5;padding-right:15px;margin-top:40px;margin-bottom:15px;font-size:20px}
+.rpt-body h3{color:#334155;margin-top:25px;margin-bottom:10px;font-size:16px}
+.rpt-body table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:14px}
+.rpt-body th,.rpt-body td{border:1px solid #ddd;padding:10px;text-align:right}
+.rpt-body th{background-color:#f1f5f9;font-weight:bold;color:#334155}
+.rpt-header-info{display:flex;justify-content:space-between;margin-bottom:30px;background:#f8f9fa;padding:15px;border-radius:8px;border:1px solid #e2e8f0;flex-wrap:wrap;gap:10px}
+.rpt-header-info div{font-size:14px;color:#475569}
+.rpt-text-block{background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:15px;border-right:4px solid #6366f1;text-align:justify;font-size:14px}
+.rpt-risk-high{color:#dc2626;font-weight:bold;border-right-color:#ef4444}
+.rpt-risk-medium{color:#d97706;font-weight:bold;border-right-color:#f59e0b}
+.rpt-footer{margin-top:50px;border-top:1px solid #ddd;padding-top:20px;text-align:center;font-size:12px;color:#64748b}
+@media print {
+    .sidebar, .topbar, .ticker-wrapper, .tabs-nav, .dash-header, .ai-prompt-btn, .menu-item, .guide-overlay, .guide-panel { display: none !important; }
+    .main { margin: 0 !important; padding: 20px !important; }
+    .report-modal { position: absolute !important; background: #fff !important; padding: 0 !important; display:block !important; overflow: visible !important; }
+    .report-modal-content { width: 100% !important; box-shadow: none !important; border: none !important; border-radius: 0 !important; }
+    .report-body { padding: 0 !important; }
+    .report-modal-header { border-radius: 0 !important; }
+}
+body.boardroom .sidebar{transform:translateX(270px)}body.boardroom .main{margin-right:0;padding:40px}body.boardroom .topbar h1{font-size:32px}body.boardroom .card{padding:32px}body.boardroom .kpi-value{font-size:32px}body.boardroom .chart-container{height:450px}body.boardroom .tabs-nav{transform:scale(1.1);margin-right:20px}
+.sidebar{position:fixed;top:0;right:0;width:270px;height:100vh;background:var(--sidebar);color:#fff;z-index:100;transition:transform .3s;display:flex;flex-direction:column}
+.sidebar-header{padding:24px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:12px}.sidebar-header i{width:46px;height:46px;background:linear-gradient(135deg,var(--primary-light),var(--secondary));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px}.sidebar-header h2{font-size:17px;font-weight:700}.sidebar-header p{font-size:11px;color:#94a3b8}
+.sidebar-menu{flex:1;overflow-y:auto;padding:16px 12px}.menu-item{display:flex;align-items:center;gap:14px;padding:13px 16px;color:#cbd5e1;cursor:pointer;transition:.2s;border-radius:12px;font-size:14px;margin-bottom:4px}.menu-item:hover,.menu-item.active{background:linear-gradient(90deg,var(--primary),var(--secondary));color:#fff}.menu-item i{width:20px;text-align:center;font-size:18px}
+.sidebar-profile{padding:16px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:12px}.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600}
+.main{margin-right:270px;padding:24px;transition:margin .3s,padding .3s}.topbar{background:var(--card);padding:16px 24px;border-radius:var(--radius);box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;position:sticky;top:16px;z-index:50;transition:background .3s;flex-wrap:wrap;gap:15px}
+.topbar h1{font-size:22px;font-weight:800}.topbar p{font-size:13px;color:var(--text-light)}.topbar-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.btn-export{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;border:none;padding:10px 20px;border-radius:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:14px}
+.search-box{background:var(--bg);border-radius:12px;padding:10px 16px;display:flex;align-items:center;gap:10px;width:240px}.search-box input{border:none;background:none;outline:none;width:100%;font-size:14px;color:var(--text)}
+.icon-btn{width:42px;height:42px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;color:var(--text);transition:background .3s}
+.dash-header{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:20px 24px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:24px;transition:background .3s;flex-wrap:wrap;gap:15px}
+.live-clock{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center}.clock-box{text-align:center}.clock-time{font-size:24px;font-weight:800;color:var(--primary)}.clock-date{font-size:12px;color:var(--text-light);margin-top:4px}
+.period-toggle{display:flex;background:var(--bg);padding:6px;border-radius:12px;gap:4px}.period-btn{padding:8px 16px;border-radius:8px;border:none;background:transparent;color:var(--text-light);cursor:pointer;font-weight:600;font-size:13px;transition:.2s}.period-btn.active{background:var(--card);color:var(--primary);box-shadow:var(--shadow)}
+.tabs-nav{display:flex;gap:8px;margin-bottom:24px;background:var(--card);padding:8px;border-radius:14px;box-shadow:var(--shadow);width:fit-content;transition:background .3s;flex-wrap:wrap}.tab-btn{padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text-light);transition:.2s;display:flex;align-items:center;gap:8px}.tab-btn.active{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;box-shadow:0 4px 12px rgba(79,70,229,.3)}
+.tab-btn.warning-tab.active{background:linear-gradient(135deg,#b91c1c,#ef4444)}.tab-btn.info-tab.active{background:linear-gradient(135deg,#0284c7,#38bdf8)}.tab-btn.purple-tab.active{background:linear-gradient(135deg,#8b5cf6,#a78bfa)}.tab-btn.crypto-tab.active{background:linear-gradient(135deg,#f59e0b,#d97706)}
+.tab-content{display:none;animation:fadeIn .4s ease}.tab-content.active{display:block}@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.grid-6,.grid-4,.grid-3,.grid-2,.grid-2-3{display:grid;gap:20px;margin-bottom:24px}.grid-6{grid-template-columns:repeat(6,1fr)}.grid-4{grid-template-columns:repeat(4,1fr)}.grid-3{grid-template-columns:repeat(3,1fr)}.grid-2{grid-template-columns:1fr 1fr}.grid-2-3{grid-template-columns:2fr 1fr}
+.card{background:var(--card);padding:24px;border-radius:var(--radius);box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s,background .3s;position:relative}.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover)}.card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}.card-title{font-size:16px;font-weight:700}.card-sub{font-size:12px;color:var(--text-light);margin-top:4px}
+.section-title{font-size:18px;font-weight:800;margin:32px 0 16px;display:flex;align-items:center;gap:10px}.section-title::before{content:'';width:4px;height:24px;background:linear-gradient(180deg,var(--primary),var(--secondary));border-radius:4px}
+.kpi-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0}.bg-primary{background:linear-gradient(135deg,#4f46e5,#6366f1)}.bg-success{background:linear-gradient(135deg,#10b981,#34d399)}.bg-danger{background:linear-gradient(135deg,#ef4444,#f87171)}.bg-warning{background:linear-gradient(135deg,#f59e0b,#fbbf24)}.bg-info{background:linear-gradient(135deg,#0284c7,#38bdf8)}.bg-purple{background:linear-gradient(135deg,#8b5cf6,#a78bfa)}
+.kpi-value{font-size:24px;font-weight:800;margin:10px 0 4px}.kpi-label{font-size:12px;color:var(--text-light)}.trend-up{color:#16a34a;background:#dcfce7;padding:4px 8px;border-radius:8px;font-size:11px;font-weight:600}.trend-down{color:#dc2626;background:#fee2e2;padding:4px 8px;border-radius:8px;font-size:11px;font-weight:600}[data-theme="dark"] .trend-up{background:rgba(16,185,129,0.2);color:#4ade80}[data-theme="dark"] .trend-down{background:rgba(239,68,68,0.2);color:#f87171}
+.chart-container{position:relative;height:300px}.chart-sm{position:relative;height:200px}.chart-lg{position:relative;height:350px}.donut-container{position:relative;height:280px;display:flex;align-items:center;justify-content:center}.donut-center{position:absolute;text-align:center}.donut-center h3{font-size:26px;font-weight:800}.donut-center p{font-size:12px;color:var(--text-light)}
+table{width:100%;border-collapse:collapse}thead th{text-align:right;padding:12px 16px;font-size:12px;color:var(--text-light);border-bottom:2px solid var(--border);font-weight:600}tbody td{padding:14px 16px;font-size:13px;border-bottom:1px solid var(--border)}tbody tr:last-child td{border-bottom:none}tbody tr:hover{background:var(--bg)}
+.badge{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px}.badge-success{background:#dcfce7;color:#16a34a}.badge-warning{background:#fef3c7;color:#d97706}.badge-danger{background:#fee2e2;color:#dc2626}.badge-primary{background:#e0e7ff;color:#4338ca}.badge-info{background:#e0f2fe;color:#0284c7}
+[data-theme="dark"] .badge-success{background:rgba(16,185,129,0.2);color:#4ade80}[data-theme="dark"] .badge-warning{background:rgba(245,158,11,0.2);color:#fbbf24}[data-theme="dark"] .badge-danger{background:rgba(239,68,68,0.2);color:#f87171}[data-theme="dark"] .badge-primary{background:rgba(99,102,241,0.2);color:#818cf8}
+.stmt-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px}.stmt-row:last-child{border-bottom:none}.stmt-header{font-weight:700;font-size:15px;background:var(--bg);padding:12px 16px;border-radius:10px;margin:8px 0}.stmt-total{font-weight:800;font-size:16px;color:var(--primary);border-top:2px solid var(--border);padding-top:12px;margin-top:8px}.stmt-indent{padding-right:24px;color:var(--text-light)}
+.health-score{display:flex;align-items:center;gap:24px}.score-ring{width:120px;height:120px;border-radius:50%;background:conic-gradient(var(--success) 0deg,var(--success) 288deg,var(--border) 288deg);display:flex;align-items:center;justify-content:center;position:relative}.score-ring::before{content:'';position:absolute;width:90px;height:90px;background:var(--card);border-radius:50%}.score-ring span{position:relative;z-index:1;font-size:28px;font-weight:800;color:var(--success)}
+.progress-item{margin-bottom:16px}.progress-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}.progress-bar{height:8px;background:var(--bg);border-radius:10px;overflow:hidden}.progress-fill{height:100%;border-radius:10px;display:flex;align-items:center;justify-content:flex-end;padding-left:6px;color:#fff;font-size:10px;font-weight:600}
+.ratio-card{background:var(--bg);padding:16px;border-radius:12px;text-align:center}.ratio-value{font-size:22px;font-weight:800;margin:8px 0}.ratio-label{font-size:12px;color:var(--text-light)}.ratio-status{font-size:11px;font-weight:600;margin-top:6px;padding:3px 8px;border-radius:8px;display:inline-block}
+.narrative-box{background:var(--narrative-bg);color:#fff;padding:30px;border-radius:var(--radius);margin-bottom:24px;box-shadow:var(--shadow);transition:background .3s}.narrative-box h3{font-size:18px;margin-bottom:16px;display:flex;align-items:center;gap:10px}.narrative-box p{font-size:14px;line-height:2.2;color:#cbd5e1;text-align:justify}.narrative-box strong{color:#fff;background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:6px}
+.analysis-card{border-right:4px solid;padding:24px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:20px;transition:.2s}.analysis-card:hover{box-shadow:var(--shadow-hover)}.analysis-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}.analysis-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff}.analysis-body{font-size:14px;color:var(--text-light);line-height:2;text-align:justify}.analysis-action{margin-top:14px;padding:12px 16px;background:var(--bg);border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.an-success{border-color:var(--success)}.an-success .analysis-icon{background:var(--success)}.an-success .analysis-action{color:var(--success)}.an-danger{border-color:var(--danger)}.an-danger .analysis-icon{background:var(--danger)}.an-danger .analysis-action{color:var(--danger)}.an-warning{border-color:var(--warning)}.an-warning .analysis-icon{background:var(--warning)}.an-warning .analysis-action{color:var(--warning)}.an-primary{border-color:var(--primary)}.an-primary .analysis-icon{background:var(--primary)}.an-primary .analysis-action{color:var(--primary)}
+.risk-alert{background:var(--card);padding:20px;border-radius:var(--radius);border-right:5px solid var(--danger);margin-bottom:16px;box-shadow:var(--shadow);display:flex;align-items:center;gap:20px;transition:background .3s}.risk-alert.high{border-color:#b91c1c}.risk-alert.medium{border-color:var(--warning)}.risk-icon{width:50px;height:50px;border-radius:50%;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}.risk-alert.medium .risk-icon{background:#fef3c7;color:#d97706}.risk-content h4{font-size:16px;font-weight:700;margin-bottom:6px}.risk-content p{font-size:13px;color:var(--text-light);line-height:1.8}.risk-action-btn{margin-right:auto;background:#fee2e2;color:#b91c1c;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px}
+.forecast-card{background:var(--narrative-bg);color:#fff;padding:24px;border-radius:var(--radius);transition:background .3s}.forecast-card h4{font-size:14px;color:#94a3b8;margin-bottom:12px}.forecast-val{font-size:32px;font-weight:800}.forecast-val.up{color:var(--success)}.forecast-val.down{color:var(--danger)}
+.bank-card{background:var(--bg);padding:16px;border-radius:12px;margin-bottom:12px}.bank-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.bank-name{font-size:14px;font-weight:700}.bank-balance{font-size:18px;font-weight:800;color:var(--success)}.bank-sparkline{height:40px;display:flex;align-items:flex-end;gap:4px}.bank-sparkline div{flex:1;background:var(--primary);opacity:.7;border-radius:4px 4px 0 0}
+.agenda-item{display:flex;gap:16px;padding:12px 0;border-bottom:1px solid var(--border)}.agenda-item:last-child{border-bottom:none}.agenda-date{width:50px;text-align:center;background:var(--bg);padding:8px;border-radius:8px;flex-shrink:0}.agenda-date .day{font-size:18px;font-weight:800;color:var(--primary)}.agenda-date .month{font-size:10px;color:var(--text-light)}.agenda-info h5{font-size:14px;font-weight:600;margin-bottom:4px}.agenda-info p{font-size:12px;color:var(--text-light)}
+.whatif-card{background:var(--card);padding:24px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:24px}.slider-group{margin-bottom:24px}.slider-label{display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:10px}.slider-val{color:var(--primary);font-weight:800}input[type="range"]{width:100%;height:8px;background:var(--bg);border-radius:10px;appearance:none;-webkit-appearance:none;outline:none}input[type="range"]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:24px;height:24px;background:var(--primary);border-radius:50%;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.2)}input[type="range"]::-moz-range-thumb{width:24px;height:24px;background:var(--primary);border-radius:50%;cursor:pointer;border:none}
+.live-price-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}.live-price-item:last-child{border-bottom:none}.lp-name{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600}.lp-name i{font-size:18px;width:24px;text-align:center}.lp-value{font-weight:800;font-size:15px}.lp-change{font-size:11px;font-weight:600;padding:2px 6px;border-radius:6px;background:#dcfce7;color:#16a34a}.lp-change.down{background:#fee2e2;color:#dc2626}[data-theme="dark"] .lp-change{background:rgba(16,185,129,0.2);color:#4ade80}[data-theme="dark"] .lp-change.down{background:rgba(239,68,68,0.2);color:#f87171}
+@media(max-width:1200px){.grid-6,.grid-4,.grid-3,.grid-2,.grid-2-3{grid-template-columns:1fr}}@media(max-width:768px){.sidebar{transform:translateX(270px)}.main{margin-right:0}.tabs-nav,.dash-header{width:100%;overflow-x:auto}.dash-header{flex-direction:column;gap:20px}}
+</style>
+</head>
+<body>
+<!-- Modals -->
+<div class="guide-overlay" id="guideOverlay" onclick="closeAllModals()"></div>
+<div class="guide-panel" id="guidePanel"><button class="guide-close" onclick="closeAllModals()"><i class="fas fa-times"></i></button><div class="guide-header"><div class="guide-icon-box" id="guideIconBox"><i class="fas fa-info-circle"></i></div><div><div class="guide-title" id="guideTitle">عنوان</div><div class="guide-subtitle" id="guideSubtitle">زیرعنوان</div></div></div><div class="guide-body"><div class="guide-section"><h4><i class="fas fa-book-open"></i> این کارت چیست؟</h4><p id="guideDesc">توضیحات</p></div><div class="guide-section"><h4><i class="fas fa-calculator"></i> فرمول محاسبه</h4><div class="guide-formula" id="guideFormula">فرمول</div></div><div class="guide-tips"><h5><i class="fas fa-lightbulb"></i> راهنمای تفسیر برای مدیر</h5><p id="guideTips">نکات</p></div></div></div>
+<div class="guide-panel" id="drillPanel" style="width:700px"><button class="guide-close" onclick="closeAllModals()"><i class="fas fa-times"></i></button><div class="guide-header"><div class="guide-icon-box"><i class="fas fa-layer-group"></i></div><div><div class="guide-title" id="drillTitle">جزئیات ریز</div><div class="guide-subtitle">Drill-Down Details</div></div></div><div class="guide-body"><table id="drillTable"><thead><tr><th>عنوان</th><th>مبلغ (تومان)</th><th>درصد</th></tr></thead><tbody id="drillBody"></tbody></table></div></div>
+<div class="guide-panel" id="promptModal" style="width:700px"><button class="guide-close" onclick="closeAllModals()"><i class="fas fa-times"></i></button><div class="guide-header" style="background:linear-gradient(135deg,#10b981,#0ea5e9)"><div class="guide-icon-box"><i class="fas fa-robot"></i></div><div><div class="guide-title">پرامپت تحلیل هوش مصنوعی</div><div class="guide-subtitle">AI Analysis Prompt (Copy & Paste)</div></div></div><div class="guide-body"><textarea class="ai-prompt-text" id="promptText" readonly></textarea><button class="ai-copy-btn" onclick="copyPrompt()"><i class="fas fa-copy"></i> کپی پرامپت (Copy Prompt)</button></div></div>
+<!-- Report Modal -->
+<div class="report-modal" id="reportModal">
+    <div class="report-modal-content">
+        <div class="report-modal-header">
+            <h2><i class="fas fa-file-alt"></i> گزارش متنی جامع</h2>
+            <div class="report-modal-actions">
+                <button class="report-action-btn" onclick="window.print()"><i class="fas fa-print"></i> چاپ / ذخیره PDF</button>
+                <button class="report-action-btn" onclick="closeReportModal()" style="background:#ef4444"><i class="fas fa-times"></i> بستن</button>
+            </div>
+        </div>
+        <div class="rpt-body" id="reportContent"></div>
+    </div>
+</div>
+<!-- Layout -->
+<div class="sidebar">
+    <div class="sidebar-header"><i class="fas fa-chart-line"></i><div><h2 id="sidebarOrgName">شرکت توسعه افق</h2><p>مرکز فرماندهی مدیر</p></div></div>
+    <nav class="sidebar-menu"><div class="menu-item active"><i class="fas fa-tachometer-alt"></i>داشبورد</div><div class="menu-item"><i class="fas fa-file-export"></i>گزارش‌های قانونی</div></nav>
+    <div class="sidebar-profile"><div class="avatar">م‌ح</div><div><div style="font-size:14px;font-weight:600">مریم حسینی</div><div style="font-size:11px;color:#94a3b8">مدیر مالی</div></div></div>
+</div>
+<div class="main">
+    <div class="topbar"><div class="org-field-container"><div class="org-select-box"><i class="fas fa-building"></i><select id="orgNameSelect" onchange="updateOrgName()"><option value="شرکت توسعه افق">شرکت توسعه افق</option><option value="صنایع پارس">صنایع پارس</option><option value="گروه مالی آریا">گروه مالی آریا</option></select></div><div><h1 id="mainTitle">گزارش جامع مالی شرکت توسعه افق</h1><p>دوره گزارش: ماهانه - آخرین بروزرسانی: لحظه‌ای</p></div></div><div class="topbar-actions"><div class="search-box"><i class="fas fa-search" style="color:var(--text-light)"></i><input type="text" placeholder="جستجو..."></div><div class="icon-btn" onclick="toggleTheme()" title="تغییر حالت روشن/تاریک"><i class="fas fa-moon" id="theme-icon"></i></div><div class="icon-btn" onclick="toggleBoardroom()" title="حالت جلسه" style="background:var(--primary);color:#fff"><i class="fas fa-tv"></i></div><button class="btn-export" onclick="generateTextReport()" style="background:#f59e0b;"><i class="fas fa-file-alt"></i> گزارش متنی (PDF)</button></div></div>
+    <div class="ticker-wrapper" id="tickerWrapper"><div class="currency-ticker" id="currencyTicker"><div class="ticker-controls"><button class="ticker-ctrl-btn" onclick="toggleTickerPause()" id="tickerPauseBtn"><i class="fas fa-pause" id="tickerPauseIcon"></i></button><button class="ticker-ctrl-btn" onclick="changeTickerSpeed()" id="tickerSpeedBtn"><i class="fas fa-tachometer-alt"></i> <span id="tickerSpeedLabel">1x</span></button><button class="ticker-ctrl-btn" onclick="toggleTicker()"><i class="fas fa-times"></i></button></div><div class="ticker-track" id="tickerTrack"></div></div><button class="show-ticker-btn" id="showTickerBtn" onclick="toggleTicker()" style="display:none"><i class="fas fa-stream"></i> نمایش نوار بازار زنده</button></div>
+    <div class="dash-header">
+        <div class="live-clock">
+            <div class="clock-box"><div class="clock-time" id="live-time">--:--:--</div><div class="clock-date">ساعت لحظه‌ای</div></div>
+            <div class="clock-box"><div class="clock-time" id="live-date-shamsi" style="font-size:20px">--/--/----</div><div class="clock-date">تاریخ شمسی</div></div>
+            <div class="clock-box"><div class="clock-time" id="live-date-miladi" style="font-size:18px; direction:ltr;">--/--/----</div><div class="clock-date">تاریخ میلادی</div></div>
+            <div class="clock-box"><div class="clock-time" id="live-day-fa" style="font-size:18px">---</div><div class="clock-date">روز هفته (فارسی)</div></div>
+            <div class="clock-box"><div class="clock-time" id="live-day-en" style="font-size:16px; direction:ltr;">---</div><div class="clock-date">Day (English)</div></div>
+            <div class="clock-box"><div class="clock-time" id="last-updated" style="font-size:14px">--:--:--</div><div class="clock-date">آخرین بروزرسانی</div></div>
+        </div>
+        <div class="period-toggle"><button class="period-btn" onclick="changePeriod(this, 'روزانه')">روزانه</button><button class="period-btn active" onclick="changePeriod(this, 'ماهانه')">ماهانه</button><button class="period-btn" onclick="changePeriod(this, 'هفتگی')">هفتگی</button><button class="period-btn" onclick="changePeriod(this, 'سالانه')">سالانه</button></div>
+    </div>
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('dashboard', this)"><i class="fas fa-th-large"></i>داشبورد جامع</button>
+        <button class="tab-btn" onclick="switchTab('analysis', this)"><i class="fas fa-brain"></i>تحلیل مالی</button>
+        <button class="tab-btn" onclick="switchTab('forecast', this)"><i class="fas fa-rocket"></i>پیش‌بینی و بودجه</button>
+        <button class="tab-btn warning-tab" onclick="switchTab('risk', this)"><i class="fas fa-bell"></i>مرکز ریسک‌ها</button>
+        <button class="tab-btn info-tab" onclick="switchTab('projects', this)"><i class="fas fa-project-diagram"></i>پروژه‌ها</button>
+        <button class="tab-btn warning-tab" onclick="switchTab('tax', this)"><i class="fas fa-balance-scale"></i>مالیات</button>
+        <button class="tab-btn purple-tab" onclick="switchTab('equity', this)"><i class="fas fa-chart-line"></i>سرمایه</button>
+        <button class="tab-btn crypto-tab" onclick="switchTab('live-prices', this)"><i class="fas fa-coins"></i>قیمت‌های زنده</button>
+    </div>
+    <!-- TAB 1: DASHBOARD -->
+    <div id="dashboard" class="tab-content active">
+        <div class="grid-6">
+            <div class="card" data-guide="revenue" onclick="drillDown('revenue')" style="cursor:pointer"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-success"><i class="fas fa-arrow-up"></i></div><div class="kpi-value">۸.۴ م‌ت</div><div class="kpi-label">درآمد کل</div><div class="trend-up">۱۲٪</div></div>
+            <div class="card" data-guide="expense" onclick="drillDown('expense')" style="cursor:pointer"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-danger"><i class="fas fa-arrow-down"></i></div><div class="kpi-value">۳.۱ م‌ت</div><div class="kpi-label">هزینه کل</div><div class="trend-down">۴.۵٪</div></div>
+            <div class="card" data-guide="profit"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-primary"><i class="fas fa-coins"></i></div><div class="kpi-value">۵.۳ م‌ت</div><div class="kpi-label">سود خالص</div><div class="trend-up">۲۰٪</div></div>
+            <div class="card" data-guide="cash"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-warning"><i class="fas fa-piggy-bank"></i></div><div class="kpi-value">۱۲.۸ م‌ت</div><div class="kpi-label">موجودی نقد</div><div class="trend-up">ثابت</div></div>
+            <div class="card" data-guide="receivables"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-info"><i class="fas fa-hand-holding-usd"></i></div><div class="kpi-value">۲.۴ م‌ت</div><div class="kpi-label">مطالبات</div><div class="trend-down">۸٪</div></div>
+            <div class="card" data-guide="payables"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-purple"><i class="fas fa-money-bill-wave"></i></div><div class="kpi-value">۱.۸ م‌ت</div><div class="kpi-label">بدهی‌ها</div><div class="trend-up">۳٪ کاهش</div></div>
+        </div>
+        <div class="section-title">تحلیل درآمد و هزینه</div>
+        <div class="grid-2-3">
+            <div class="card" data-guide="finance-chart"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">درآمد در برابر هزینه</div><div class="card-sub">مقایسه ۸ ماه اخیر</div></div></div><div class="chart-container"><canvas id="financeChart"></canvas></div></div>
+            <div class="card" data-guide="expense-chart"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">تفکیک هزینه‌ها</div><div class="card-sub">سهم هر بخش</div></div></div><div class="donut-container"><canvas id="expenseChart"></canvas><div class="donut-center"><h3>۳.۱م‌ت</h3><p>کل هزینه‌ها</p></div></div></div>
+        </div>
+        <div class="section-title">مسیر جریان پول (Sankey Diagram)</div>
+        <div class="card" data-guide="sankey"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">نمودار بصری ورود و خروج وجه</div><div class="card-sub">ساختار درآمدها و تخصیص هزینه‌ها</div></div></div><div id="sankeyChart" style="width:100%;height:400px"></div></div>
+        <div class="section-title">جریان نقدینگی و سلامت مالی</div>
+        <div class="grid-2">
+            <div class="card" data-guide="cashflow"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">جریان نقدینگی (Cash Flow)</div><div class="card-sub">ورودی و خروجی هفتگی</div></div></div><div class="chart-container"><canvas id="cashFlowChart"></canvas></div></div>
+            <div class="card" data-guide="health-score"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">امتیاز سلامت مالی سازمان</div><div class="card-sub">بر اساس شاخص‌های کلیدی</div></div></div><div class="health-score" style="margin-top:20px"><div class="score-ring"><span>۸۰</span></div><div class="score-info"><div class="score-title">وضعیت: سلامت مطلوب</div><div class="score-desc">سازمان از نظر نقدینگی، سودآوری و اهرمی در وضعیت پایدار است.</div></div></div><div style="margin-top:24px"><div class="progress-item"><div class="progress-label"><span>نقدینگی</span><span>۹۰٪</span></div><div class="progress-bar"><div class="progress-fill" style="width:90%;background:linear-gradient(90deg,#10b981,#34d399)">۹۰</div></div></div><div class="progress-item"><div class="progress-label"><span>سودآوری</span><span>۸۵٪</span></div><div class="progress-bar"><div class="progress-fill" style="width:85%;background:linear-gradient(90deg,#4f46e5,#6366f1)">۸۵</div></div></div><div class="progress-item"><div class="progress-label"><span>مدیریت بدهی</span><span>۷۰٪</span></div><div class="progress-bar"><div class="progress-fill" style="width:70%;background:linear-gradient(90deg,#f59e0b,#fbbf24)">۷۰</div></div></div></div></div>
+        </div>
+        <div class="section-title">شاخص‌های مالی و نسبت‌ها</div>
+        <div class="grid-4">
+            <div class="card" data-guide="current-ratio"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-title" style="margin-bottom:16px">نسبت‌های نقدینگی</div><div class="ratio-card" style="margin-bottom:10px"><div class="ratio-label">نسبت جاری</div><div class="ratio-value" style="color:var(--success)">۱.۸</div><div class="ratio-status" style="background:#dcfce7;color:#16a34a">مطلوب</div></div><div class="ratio-card"><div class="ratio-label">نسبت آنی</div><div class="ratio-value" style="color:var(--success)">۱.۲</div><div class="ratio-status" style="background:#dcfce7;color:#16a34a">مطلوب</div></div></div>
+            <div class="card" data-guide="profit-margin"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-title" style="margin-bottom:16px">نسبت‌های سودآوری</div><div class="ratio-card" style="margin-bottom:10px"><div class="ratio-label">حاشیه سود خالص</div><div class="ratio-value" style="color:var(--success)">۶۳٪</div><div class="ratio-status" style="background:#dcfce7;color:#16a34a">عالی</div></div><div class="ratio-card"><div class="ratio-label">ROI</div><div class="ratio-value" style="color:var(--success)">۲۴٪</div><div class="ratio-status" style="background:#dcfce7;color:#16a34a">عالی</div></div></div>
+            <div class="card" data-guide="debt-ratio"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-title" style="margin-bottom:16px">نسبت‌های اهرمی</div><div class="ratio-card" style="margin-bottom:10px"><div class="ratio-label">بدهی به دارایی</div><div class="ratio-value" style="color:var(--warning)">۰.۳۵</div><div class="ratio-status" style="background:#fef3c7;color:#d97706">متوسط</div></div><div class="ratio-card"><div class="ratio-label">بدهی به حقوق</div><div class="ratio-value" style="color:var(--success)">۰.۵۴</div><div class="ratio-status" style="background:#dcfce7;color:#16a34a">مطلوب</div></div></div>
+            <div class="card" data-guide="dso"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-title" style="margin-bottom:16px">نسبت‌های فعالیت</div><div class="ratio-card" style="margin-bottom:10px"><div class="ratio-label">دوره وصول مطالبات</div><div class="ratio-value" style="color:var(--warning)">۴۵ روز</div><div class="ratio-status" style="background:#fef3c7;color:#d97706">نیازمند بهبود</div></div><div class="ratio-card"><div class="ratio-label">دوره گردش موجودی</div><div class="ratio-value" style="color:var(--success)">۳۲ روز</div><div class="ratio-status" style="background:#dcfce7;color:#16a34a">مطلوب</div></div></div>
+        </div>
+        <div class="section-title">صورت‌های مالی</div>
+        <div class="grid-2">
+            <div class="card" data-guide="pl-statement"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">صورت سود و زیان (P&L)</div><div class="card-sub">مقایسه با دوره قبل</div></div></div><div class="stmt-header">درآمدها</div><div class="stmt-row"><span>فروش کالا و خدمات</span><span style="font-weight:600">۸,۴۰۰,۰۰۰,۰۰۰</span></div><div class="stmt-row stmt-indent"><span>فروش داخلی</span><span>۶,۲۰۰,۰۰۰,۰۰۰</span></div><div class="stmt-row stmt-indent"><span>صادرات</span><span>۲,۲۰۰,۰۰۰,۰۰۰</span></div><div class="stmt-row stmt-total"><span>جمع درآمدها</span><span>۸,۵۵۰,۰۰۰,۰۰۰</span></div><div class="stmt-header" style="margin-top:16px">هزینه‌ها</div><div class="stmt-row"><span>بهای تمام شده کالای فروش رفته</span><span style="font-weight:600;color:var(--danger)">۳,۱۰۰,۰۰۰,۰۰۰</span></div><div class="stmt-row"><span>هزینه‌های فروش و اداری</span><span style="font-weight:600;color:var(--danger)">۹۵۰,۰۰۰,۰۰۰</span></div><div class="stmt-row stmt-total"><span>جمع هزینه‌ها</span><span style="color:var(--danger)">۴,۱۳۰,۰۰۰,۰۰۰</span></div><div class="stmt-row stmt-total" style="border-top:3px solid var(--primary);font-size:18px"><span>سود خالص دوره</span><span style="color:var(--success)">۴,۴۲۰,۰۰۰,۰۰۰</span></div></div>
+            <div class="card" data-guide="balance-sheet"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">ترازنامه خلاصه</div><div class="card-sub">وضعیت دارایی و بدهی</div></div></div><div class="stmt-row"><span>دارایی‌های جاری</span><span style="font-weight:600">۸,۹۰۰,۰۰۰,۰۰۰</span></div><div class="stmt-row stmt-indent"><span>وجه نقد و بانک</span><span>۱۲,۸۰۰,۰۰۰,۰۰۰</span></div><div class="stmt-row stmt-indent"><span>مطالبات تجاری</span><span>۲,۴۰۰,۰۰۰,۰۰۰</span></div><div class="stmt-row stmt-total"><span>جمع کل دارایی‌ها</span><span>۱۵,۱۰۰,۰۰۰,۰۰۰</span></div><div style="margin-top:16px"><div class="chart-sm"><canvas id="balanceChart"></canvas></div></div></div>
+        </div>
+        <div class="section-title">تحلیل مطالبات و بدهی‌ها (Aging)</div>
+        <div class="grid-2">
+            <div class="card" data-guide="ar-aging"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">مطالبات از مشتریان (AR)</div></div></div><div class="chart-sm" style="margin-bottom:16px"><canvas id="arChart"></canvas></div><table><thead><tr><th>بازه زمانی</th><th>تعداد</th><th>مبلغ</th><th>درصد</th></tr></thead><tbody><tr><td>سررسید نرسیده</td><td>۲۸</td><td>۱.۵ م‌ت</td><td style="color:var(--success)">۶۲٪</td></tr><tr><td>۱-۳۰ روز گذشته</td><td>۱۲</td><td>۶۲۰ م‌ت</td><td style="color:var(--warning)">۲۶٪</td></tr><tr><td>+۶۰ روز</td><td>۲</td><td>۱۰۰ م‌ت</td><td style="color:var(--danger)">۴٪</td></tr></tbody></table></div>
+            <div class="card" data-guide="ap-aging"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">بدهی به تامین‌کنندگان (AP)</div></div></div><div class="chart-sm" style="margin-bottom:16px"><canvas id="apChart"></canvas></div><table><thead><tr><th>بازه زمانی</th><th>تعداد</th><th>مبلغ</th><th>درصد</th></tr></thead><tbody><tr><td>سررسید نرسیده</td><td>۱۸</td><td>۱.۱ م‌ت</td><td style="color:var(--success)">۶۱٪</td></tr><tr><td>۱-۳۰ روز گذشته</td><td>۸</td><td>۴۵۰ م‌ت</td><td style="color:var(--warning)">۲۵٪</td></tr><tr><td>+۶۰ روز</td><td>۲</td><td>۱۰۰ م‌ت</td><td style="color:var(--danger)">۶٪</td></tr></tbody></table></div>
+        </div>
+        <div class="section-title">مدیریت چک‌ها و بانک‌ها</div>
+        <div class="grid-3">
+            <div class="card" data-guide="checks-received"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">چک‌های دریافتی</div></div></div><div class="stmt-row"><span>وصول شده</span><span style="color:var(--success);font-weight:700">۹۸۰ م‌ت</span></div><div class="stmt-row"><span>در جریان</span><span style="color:var(--warning);font-weight:700">۳۲۰ م‌ت</span></div><div class="stmt-row"><span>برگشت خورده</span><span style="color:var(--danger);font-weight:700">۸۵ م‌ت</span></div></div>
+            <div class="card" data-guide="checks-paid"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">چک‌های پرداختی</div></div></div><div class="stmt-row"><span>پرداخت شده</span><span style="color:var(--success);font-weight:700">۱,۲۵۰ م‌ت</span></div><div class="stmt-row"><span>سررسید آینده</span><span style="color:var(--warning);font-weight:700">۴۵۰ م‌ت</span></div></div>
+            <div class="card" data-guide="agenda"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">تقویم سررسید نزدیک</div></div></div><div class="stmt-row"><span>۲۸ مرداد - پرداختی</span><span style="color:var(--danger);font-weight:700">۱۲۰ م‌ت</span></div><div class="stmt-row"><span>۳۰ مرداد - دریافتی</span><span style="color:var(--success);font-weight:700">۸۵ م‌ت</span></div><div class="stmt-row"><span>۱ شهریور - پرداختی</span><span style="color:var(--danger);font-weight:700">۶۰ م‌ت</span></div></div>
+        </div>
+        <div class="section-title">موجودی حساب‌های بانکی</div>
+        <div class="grid-4">
+            <div class="card" data-guide="bank-accounts"><div class="card-hint"><i class="fas fa-question"></i></div><div class="bank-card"><div class="bank-header"><div class="bank-name">بانک ملت (جاری)</div><i class="fas fa-university" style="color:var(--primary)"></i></div><div class="bank-balance">۵.۲ میلیارد ت</div><div class="bank-sparkline"><div style="height:40%"></div><div style="height:60%"></div><div style="height:50%"></div><div style="height:80%"></div><div style="height:70%"></div><div style="height:90%"></div></div></div></div>
+            <div class="card" data-guide="bank-accounts"><div class="card-hint"><i class="fas fa-question"></i></div><div class="bank-card"><div class="bank-header"><div class="bank-name">بانک صادرات (جاری)</div><i class="fas fa-university" style="color:var(--success)"></i></div><div class="bank-balance">۳.۸ میلیارد ت</div><div class="bank-sparkline"><div style="height:70%"></div><div style="height:60%"></div><div style="height:40%"></div><div style="height:50%"></div><div style="height:60%"></div><div style="height:40%"></div></div></div></div>
+            <div class="card" data-guide="bank-accounts"><div class="card-hint"><i class="fas fa-question"></i></div><div class="bank-card"><div class="bank-header"><div class="bank-name">بانک تجارت (پس‌انداز)</div><i class="fas fa-piggy-bank" style="color:var(--warning)"></i></div><div class="bank-balance">۲.۱ میلیارد ت</div><div class="bank-sparkline"><div style="height:20%"></div><div style="height:30%"></div><div style="height:50%"></div><div style="height:40%"></div><div style="height:60%"></div><div style="height:80%"></div></div></div></div>
+            <div class="card" data-guide="bank-accounts"><div class="card-hint"><i class="fas fa-question"></i></div><div class="bank-card"><div class="bank-header"><div class="bank-name">صندوق دفتری</div><i class="fas fa-wallet" style="color:var(--purple)"></i></div><div class="bank-balance">۱۷۰ میلیون ت</div><div class="bank-sparkline"><div style="height:50%"></div><div style="height:40%"></div><div style="height:60%"></div><div style="height:30%"></div><div style="height:40%"></div><div style="height:20%"></div></div></div></div>
+        </div>
+        <div class="section-title">تقویم مالی امروز</div>
+        <div class="card" data-guide="agenda-today"><div class="card-hint"><i class="fas fa-question"></i></div><div class="agenda-item"><div class="agenda-date"><div class="day">۱۰</div><div class="month">صبح</div></div><div class="agenda-info"><h5>جلسه بررسی بودجه با مدیران ارشد</h5><p>بررسی انحرافات بودجه ماه گذشته و تخصیص بودجه جدید فصل پاییز</p></div><span class="badge badge-primary">جلسه</span></div><div class="agenda-item"><div class="agenda-date"><div class="day">۱۲</div><div class="month">ظهر</div></div><div class="agenda-info"><h5>سررسید چک پرداختی بانک ملت</h5><p>پرداخت چک ۱۲۰ میلیون تومانی به شرکت تامین‌کننده مواد اولیه</p></div><span class="badge badge-danger">اقدام فوری</span></div><div class="agenda-item"><div class="agenda-date"><div class="day">۱۵</div><div class="month">عصر</div></div><div class="agenda-info"><h5>تماس با بازرگانی آریا</h5><p>پیگیری وضعیت چک برگشت خورده به مبلغ ۸۵ میلیون تومان</p></div><span class="badge badge-warning">پیگیری</span></div></div>
+        <div class="section-title">تحلیل فروش و بخش‌ها</div>
+        <div class="grid-2">
+            <div class="card" data-guide="top-products"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">پرفروش‌ترین محصولات/خدمات</div></div></div><div class="progress-item"><div class="progress-label"><span>خدمات نصب و راه‌اندازی</span><span>۳.۲ میلیارد</span></div><div class="progress-bar"><div class="progress-fill" style="width:85%;background:linear-gradient(90deg,#4f46e5,#6366f1)">۸۵٪</div></div></div><div class="progress-item"><div class="progress-label"><span>فروش دستگاه مدل A</span><span>۲.۸ میلیارد</span></div><div class="progress-bar"><div class="progress-fill" style="width:70%;background:linear-gradient(90deg,#0ea5e9,#38bdf8)">۷۰٪</div></div></div><div class="progress-item"><div class="progress-label"><span>فروش قطعات یدکی</span><span>۱.۵ میلیارد</span></div><div class="progress-bar"><div class="progress-fill" style="width:40%;background:linear-gradient(90deg,#10b981,#34d399)">۴۰٪</div></div></div><div class="progress-item"><div class="progress-label"><span>خدمات پس از فروش</span><span>۹۰۰ میلیون</span></div><div class="progress-bar"><div class="progress-fill" style="width:25%;background:linear-gradient(90deg,#f59e0b,#fbbf24)">۲۵٪</div></div></div></div>
+            <div class="card" data-guide="dept-performance"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">گردش کار بخش‌ها</div></div></div><div class="chart-container" style="height:260px"><canvas id="deptChart"></canvas></div></div>
+        </div>
+        <div class="section-title">آخرین تراکنش‌های مالی</div>
+        <div class="card" data-guide="transactions"><div class="card-hint"><i class="fas fa-question"></i></div><table><thead><tr><th>تاریخ</th><th>شماره سند</th><th>شرح</th><th>بدهکار</th><th>بستانکار</th><th>مبلغ</th><th>وضعیت</th></tr></thead><tbody><tr><td>۲۴ مرداد</td><td>TR-8845</td><td>تسویه پروژه فاز ۲</td><td>بانک ملت</td><td>درآمد فروش</td><td style="font-weight:700;color:var(--success)">۵۴۰,۰۰۰,۰۰۰</td><td><span class="badge badge-success">تسویه</span></td></tr><tr><td>۲۳ مرداد</td><td>TR-8844</td><td>پرداخت حقوق پرسنل</td><td>حقوق و دستمزد</td><td>بانک صادرات</td><td style="font-weight:700;color:var(--danger)">۱,۲۰۰,۰۰۰,۰۰۰</td><td><span class="badge badge-success">تسویه</span></td></tr><tr><td>۲۲ مرداد</td><td>TR-8840</td><td>پرداخت قسط وام ملت</td><td>وام دریافتی</td><td>بانک ملت</td><td style="font-weight:700;color:var(--danger)">۱۵۰,۰۰۰,۰۰۰</td><td><span class="badge badge-warning">در انتظار</span></td></tr></tbody></table></div>
+        <button class="ai-prompt-btn" onclick="generateAIPrompt('dashboard')"><i class="fas fa-robot"></i> تولید پرامپت تحلیل هوش مصنوعی برای این تب</button>
+    </div>
+    <!-- TAB 2 -->
+    <div id="analysis" class="tab-content">
+        <div class="card narrative-box" data-guide="analysis-summary" style="padding:30px;margin-bottom:24px"><div class="card-hint" style="background:rgba(255,255,255,0.2);color:#fff"><i class="fas fa-question"></i></div><h3><i class="fas fa-robot" style="color:var(--secondary)"></i> خلاصه مدیریتی (Executive Summary)</h3><p>در دوره مرداد ۱۴۰۳، سازمان با <strong>رشد ۱۲ درصدی درآمد</strong> به ۸.۴ میلیارد تومان عملکرد موفقی داشته است. کنترل هزینه‌ها باعث شد تا <strong>سود خالص ۲۰ درصد رشد</strong> کند. با این حال، بخش حساب‌های دریافتی نیازمند توجه است؛ زیرا <strong>۱۰۰ میلیون تومان چک برگشت خورده</strong> ثبت شده است. توصیه می‌شود پیش از سررسید مالیات (۱۵ شهریور)، تراز بانکی برای پرداخت ۳۲۰ میلیون تومان مالیات جدا شود.</p></div>
+        <div class="grid-2">
+            <div class="card analysis-card an-success" data-guide="analysis-profit"><div class="card-hint"><i class="fas fa-question"></i></div><div class="analysis-header"><div class="analysis-icon"><i class="fas fa-chart-line"></i></div><div class="analysis-title">تحلیل سودآوری</div></div><div class="analysis-body">رشد درآمد (۱۲٪) بیشتر از رشد هزینه‌ها (۴.۵٪) بوده است. حاشیه سود خالص به ۶۳٪ رسیده که عدد مطلوبی است.</div><div class="analysis-action"><i class="fas fa-lightbulb"></i> بازنگری در استراتژی قیمت‌گذاری برای حفظ حاشیه سود.</div></div>
+            <div class="card analysis-card an-danger" data-guide="analysis-risk"><div class="card-hint"><i class="fas fa-question"></i></div><div class="analysis-header"><div class="analysis-icon"><i class="fas fa-exclamation-triangle"></i></div><div class="analysis-title">ریسک نقدینگی و چک‌ها</div></div><div class="analysis-body">۸۵ میلیون تومان چک برگشت خورده است. ۴۵۰ میلیون تومان چک پرداختی در ۱۵ روز آینده سررسید دارد.</div><div class="analysis-action"><i class="fas fa-gavel"></i> ارجاع چک‌های برگشتی به حقوقی و مذاکره با مشتریان.</div></div>
+            <div class="card analysis-card an-primary" data-guide="analysis-cashflow"><div class="card-hint"><i class="fas fa-question"></i></div><div class="analysis-header"><div class="analysis-icon"><i class="fas fa-water"></i></div><div class="analysis-title">جریان نقدینگی</div></div><div class="analysis-body">بیشترین خروج نقدینگی در هفته سوم (۱.۵ میلیارد تومان) رخ داده. ورودی هفته چهارم (۲.۵ میلیارد) تراز را مثبت کرد.</div><div class="analysis-action"><i class="fas fa-balance-scale"></i> زمان‌بندی بهتر پرداخت‌ها برای جلوگیری از تراکم خروج وجه.</div></div>
+            <div class="card analysis-card an-warning" data-guide="analysis-tax"><div class="card-hint"><i class="fas fa-question"></i></div><div class="analysis-header"><div class="analysis-icon"><i class="fas fa-calculator"></i></div><div class="analysis-title">تعهدات مالی و مالیات</div></div><div class="analysis-body">مهلت پرداخت مالیات ارزش افزوده (۳۲۰ میلیون تومان) تا ۱۵ شهریور است. ۱۲۰ میلیون تومان مالیات معوق وجود دارد.</div><div class="analysis-action"><i class="fas fa-clock"></i> تامین نقدینگی برای پرداخت مالیات سررسید و پیگیری معوقات.</div></div>
+        </div>
+        <button class="ai-prompt-btn" onclick="generateAIPrompt('analysis')"><i class="fas fa-robot"></i> تولید پرامپت تحلیل هوش مصنوعی برای این تب</button>
+    </div>
+    <!-- TAB 3 -->
+    <div id="forecast" class="tab-content">
+        <div class="section-title">تحلیل سناریو (What-If Analysis)</div>
+        <div class="card whatif-card"><p style="margin-bottom:20px;color:var(--text-light)">با تغییر متغیرهای زیر، تاثیر آن‌ها را بر سود خالص ۳ ماه آینده به صورت لحظه‌ای مشاهده کنید.</p><div class="grid-3"><div class="slider-group"><div class="slider-label"><span>نرخ ارز (تاثیر روی درآمد)</span><span class="slider-val" id="dollarVal">۰٪</span></div><input type="range" min="-20" max="50" value="0" id="dollarSlider" oninput="calculateWhatIf()"></div><div class="slider-group"><div class="slider-label"><span>هزینه بازاریابی</span><span class="slider-val" id="mktVal">۰٪</span></div><input type="range" min="-30" max="50" value="0" id="mktSlider" oninput="calculateWhatIf()"></div><div class="slider-group"><div class="slider-label"><span>حقوق و دستمزد</span><span class="slider-val" id="hrVal">۰٪</span></div><input type="range" min="-10" max="40" value="0" id="hrSlider" oninput="calculateWhatIf()"></div></div><div style="background:var(--bg);padding:20px;border-radius:12px;text-align:center;margin-top:16px"><div style="font-size:14px;color:var(--text-light)">سود خالص پیش‌بینی شده بر اساس سناریوی شما</div><div id="whatifResult" style="font-size:36px;font-weight:800;color:var(--success);margin-top:8px">۵.۳ میلیارد تومان</div><div id="whatifChange" style="font-size:14px;color:var(--text-light);margin-top:4px">بدون تغییر نسبت به حالا</div></div></div>
+        <div class="section-title">پیش‌بینی ۳ ماه آینده (Forecasting)</div>
+        <div class="grid-3"><div class="card forecast-card" data-guide="forecast-cash"><div class="card-hint"><i class="fas fa-question"></i></div><h4><i class="fas fa-wallet"></i> پیش‌بینی نقدینگی پایان مهر</h4><div class="forecast-val up">۱۴.۵ میلیارد ت</div><p style="font-size:12px;color:#94a3b8;margin-top:8px">روند مثبت - با توجه به وصول چک‌های در جریان</p></div><div class="card forecast-card" data-guide="forecast-revenue"><div class="card-hint"><i class="fas fa-question"></i></div><h4><i class="fas fa-chart-bar"></i> پیش‌بینی درآمد آبان</h4><div class="forecast-val up">۹.۲ میلیارد ت</div><p style="font-size:12px;color:#94a3b8;margin-top:8px">رشد ۹٪ - بر اساس قراردادهای قطعی</p></div><div class="card forecast-card" data-guide="forecast-expense"><div class="card-hint"><i class="fas fa-question"></i></div><h4><i class="fas fa-fire"></i> پیش‌بینی هزینه‌های پاییز</h4><div class="forecast-val down">۴.۱ میلیارد ت</div><p style="font-size:12px;color:#94a3b8;margin-top:8px">افزایش ۱۵٪ - هزینه‌های فعال‌سازی پروژه جدید</p></div></div>
+        <div class="section-title">مقایسه عملکرد با بودجه مصوب</div>
+        <div class="card" data-guide="budget-chart"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">نمودار انحرافات بودجه‌ای</div><div class="card-sub">بودجه در مقابل هزینه واقعی (مرداد ۱۴۰۳)</div></div></div><div style="height:350px"><canvas id="budgetChart"></canvas></div></div>
+        <button class="ai-prompt-btn" onclick="generateAIPrompt('forecast')"><i class="fas fa-robot"></i> تولید پرامپت تحلیل هوش مصنوعی برای این تب</button>
+    </div>
+    <!-- TAB 4 -->
+    <div id="risk" class="tab-content">
+        <div class="section-title" style="border-color:var(--danger)">هشدارهای بحرانی و نیازمند اقدام فوری</div>
+        <div class="card risk-alert high" data-guide="risk-bounced-check"><div class="card-hint"><i class="fas fa-question"></i></div><div class="risk-icon"><i class="fas fa-times-circle"></i></div><div class="risk-content"><h4>چک برگشت خورده بحرانی - مبلغ ۸۵ میلیون تومان</h4><p>چک شرکت "بازرگانی آریا" به دلیل عدم موجودی کافی برگشت خورده است. آخرین مهلت اعتراض وام روز جمعه است.</p></div><button class="risk-action-btn">اقدام حقوقی</button></div>
+        <div class="card risk-alert high" data-guide="risk-tax"><div class="card-hint"><i class="fas fa-question"></i></div><div class="risk-icon"><i class="fas fa-balance-scale-right"></i></div><div class="risk-content"><h4>سررسید مالیات ارزش افزوده - ۳۲۰ میلیون تومان</h4><p>مهلت ارسال اظهارنامه و پرداخت مالیات مرحله اول تا ۱۵ شهریور ماه است. عدم پرداخت منجر به جریمه ۵٪ خواهد شد.</p></div><button class="risk-action-btn">پرداخت فوری</button></div>
+        <div class="card risk-alert medium" data-guide="risk-default-customer"><div class="card-hint"><i class="fas fa-question"></i></div><div class="risk-icon"><i class="fas fa-user-slash"></i></div><div class="risk-content"><h4>مشتری نکول‌شده - مجموعا ۱۰۰ میلیون تومان</h4><p>۲ فقره فاکتور از شرکت "صنایع غذایی سامان" بیش از ۶۰ روز از سررسید گذشته است و پاسخگویی نمی‌کنند.</p></div><button class="risk-action-btn" style="background:#fef3c7;color:#d97706">تسویه حساب</button></div>
+        <button class="ai-prompt-btn" onclick="generateAIPrompt('risk')"><i class="fas fa-robot"></i> تولید پرامپت تحلیل هوش مصنوعی برای این تب</button>
+    </div>
+    <!-- TAB 5 -->
+    <div id="projects" class="tab-content">
+        <div class="grid-4">
+            <div class="card" data-guide="proj-total"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-info"><i class="fas fa-project-diagram"></i></div><div class="kpi-value">۱۸</div><div class="kpi-label">پروژه‌های فعال</div><div class="trend-up">۲ پروژه جدید</div></div>
+            <div class="card" data-guide="proj-profit"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-success"><i class="fas fa-coins"></i></div><div class="kpi-value">۳.۸ م‌ت</div><div class="kpi-label">سود پروژه‌ها</div><div class="trend-up">۱۴٪</div></div>
+            <div class="card" data-guide="proj-progress"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-warning"><i class="fas fa-tasks"></i></div><div class="kpi-value">۶۵٪</div><div class="kpi-label">میانگین پیشرفت</div><div class="trend-up">۵٪</div></div>
+            <div class="card" data-guide="proj-risk"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></div><div class="kpi-value">۲</div><div class="kpi-label">پروژه‌های ضررده</div><div class="trend-down">نیازمند بررسی</div></div>
+        </div>
+        <div class="section-title">سودآوری پروژه‌ها</div>
+        <div class="card" data-guide="proj-chart"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">درآمد در برابر هزینه پروژه‌ها</div><div class="card-sub">مقایسه مالی ۵ پروژه اخیر</div></div></div><div class="chart-container"><canvas id="projectChart"></canvas></div></div>
+        <button class="ai-prompt-btn" onclick="generateAIPrompt('projects')"><i class="fas fa-robot"></i> تولید پرامپت تحلیل هوش مصنوعی برای این تب</button>
+    </div>
+    <!-- TAB 6 -->
+    <div id="tax" class="tab-content">
+        <div class="grid-4">
+            <div class="card" data-guide="tax-paid"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-success"><i class="fas fa-check-circle"></i></div><div class="kpi-value">۱.۲ م‌ت</div><div class="kpi-label">مالیات پرداخت شده امسال</div><div class="trend-up">۱۰٪ کاهش</div></div>
+            <div class="card" data-guide="tax-pending"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-danger"><i class="fas fa-clock"></i></div><div class="kpi-value">۳۲۰ م‌ت</div><div class="kpi-label">مالیات معوق (سررسید شده)</div><div class="trend-down">نیازمند اقدام</div></div>
+            <div class="card" data-guide="tax-provision"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-warning"><i class="fas fa-piggy-bank"></i></div><div class="kpi-value">۸۸۰ م‌ت</div><div class="kpi-label">رزرو مالیات (پیش‌بینی)</div><div class="trend-up">بر اساس سود</div></div>
+            <div class="card" data-guide="tax-due"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-info"><i class="fas fa-calendar-day"></i></div><div class="kpi-value">۱۵ شهریور</div><div class="kpi-label">سررسید بعدی</div><div class="trend-down">۱۰ روز مانده</div></div>
+        </div>
+        <div class="section-title">روند مالیات و سود</div>
+        <div class="card" data-guide="tax-chart"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">مقایسه سود قبل از مالیات با مالیات پرداختی</div><div class="card-sub">۶ ماه اخیر</div></div></div><div class="chart-container"><canvas id="taxChart"></canvas></div></div>
+        <button class="ai-prompt-btn" onclick="generateAIPrompt('tax')"><i class="fas fa-robot"></i> تولید پرامپت تحلیل هوش مصنوعی برای این تب</button>
+    </div>
+    <!-- TAB 7 -->
+    <div id="equity" class="tab-content">
+        <div class="grid-4">
+            <div class="card" data-guide="equity-total"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-purple"><i class="fas fa-vault"></i></div><div class="kpi-value">۸.۵ م‌ت</div><div class="kpi-label">کل حقوق صاحبان سهام</div><div class="trend-up">۲۰٪ رشد</div></div>
+            <div class="card" data-guide="equity-roe"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-success"><i class="fas fa-percentage"></i></div><div class="kpi-value">۲۸٪</div><div class="kpi-label">بازگشت حقوق صاحبان (ROE)</div><div class="trend-up">۴٪</div></div>
+            <div class="card" data-guide="equity-eps"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-info"><i class="fas fa-chart-line"></i></div><div class="kpi-value">۱,۲۵۰ ت</div><div class="kpi-label">سود هر سهم (EPS)</div><div class="trend-up">۱۵٪</div></div>
+            <div class="card" data-guide="equity-de"><div class="card-hint"><i class="fas fa-question"></i></div><div class="kpi-icon bg-warning"><i class="fas fa-scale-unbalanced"></i></div><div class="kpi-value">۰.۵۴</div><div class="kpi-label">نسبت بدهی به حقوق</div><div class="trend-down">کاهش ریسک</div></div>
+        </div>
+        <div class="section-title">ساختار سرمایه</div>
+        <div class="card" data-guide="equity-chart"><div class="card-hint"><i class="fas fa-question"></i></div><div class="card-header"><div><div class="card-title">ترکیب منابع تامین مالی شرکت</div><div class="card-sub">حقوق صاحبان سهام در برابر بدهی‌ها</div></div></div><div class="donut-container"><canvas id="equityChart"></canvas><div class="donut-center"><h3>۱۵.۱ م‌ت</h3><p>کل منابع</p></div></div></div>
+        <button class="ai-prompt-btn" onclick="generateAIPrompt('equity')"><i class="fas fa-robot"></i> تولید پرامپت تحلیل هوش مصنوعی برای این تب</button>
+    </div>
+    <!-- TAB 8 -->
+    <div id="live-prices" class="tab-content">
+        <div class="grid-4">
+            <div class="card" data-guide="live-currency"><div class="card-header"><div><div class="card-title">ارزهای اصلی</div><div class="card-sub">قیمت لحظه‌ای بازار آزاد</div></div><div class="kpi-icon bg-success" style="width:40px;height:40px;font-size:16px"><i class="fas fa-dollar-sign"></i></div></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-dollar-sign" style="color:#10b981"></i> دلار آمریکا</span><span class="lp-value" id="price-usd">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-euro-sign" style="color:#0ea5e9"></i> یورو اروپا</span><span class="lp-value" id="price-eur">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-yen-sign" style="color:#ef4444"></i> ین ژاپن</span><span class="lp-value" id="price-jpy">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-pound-sign" style="color:#8b5cf6"></i> پوند انگلیس</span><span class="lp-value" id="price-gbp">در حال بارگذاری...</span></div></div>
+            <div class="card" data-guide="live-crypto"><div class="card-header"><div><div class="card-title">ارزهای دیجیتال</div><div class="card-sub">بازار کریپتو (تومان)</div></div><div class="kpi-icon bg-warning" style="width:40px;height:40px;font-size:16px"><i class="fab fa-bitcoin"></i></div></div><div class="live-price-item"><span class="lp-name"><i class="fab fa-bitcoin" style="color:#f7931a"></i> بیت کوین (BTC)</span><span class="lp-value" id="price-btc">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fab fa-ethereum" style="color:#627eea"></i> اتریوم (ETH)</span><span class="lp-value" id="price-eth">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fab fa-monero" style="color:#f60"></i> تتر (USDT)</span><span class="lp-value" id="price-usdt">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fab fa-dogecoin" style="color:#ba2"></i> دوج کوین (DOGE)</span><span class="lp-value" id="price-doge">در حال بارگذاری...</span></div></div>
+            <div class="card" data-guide="live-metals"><div class="card-header"><div><div class="card-title">فلزات گران‌بها</div><div class="card-sub">طلا، نقره و پلاتین</div></div><div class="kpi-icon bg-warning" style="width:40px;height:40px;font-size:16px"><i class="fas fa-gem"></i></div></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-coins" style="color:#fbbf24"></i> اونس جهانی طلا</span><span class="lp-value" id="price-gold">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-circle-notch" style="color:#94a3b8"></i> نقره (اونس)</span><span class="lp-value" id="price-silver">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-square" style="color:#e2e8f0"></i> پلاتین (اونس)</span><span class="lp-value" id="price-platinum">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-square" style="color:#cbd5e1"></i> پالادیوم (اونس)</span><span class="lp-value" id="price-palladium">در حال بارگذاری...</span></div></div>
+            <div class="card" data-guide="live-iran-stock"><div class="card-header"><div><div class="card-title">بورس ایران</div><div class="card-sub">شاخص‌های اصلی</div></div><div class="kpi-icon bg-primary" style="width:40px;height:40px;font-size:16px"><i class="fas fa-chart-line"></i></div></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-chart-bar" style="color:#4f46e5"></i> شاخص کل (TEDPIX)</span><span class="lp-value" id="price-tedpix">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-chart-bar" style="color:#0ea5e9"></i> شاخص هم‌وزن</span><span class="lp-value" id="price-eqw">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-chart-bar" style="color:#8b5cf6"></i> صفحه اول فرابورس</span><span class="lp-value" id="price-fb30">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-chart-bar" style="color:#10b981"></i> شاخص صنعت</span><span class="lp-value" id="price-ind">در حال بارگذاری...</span></div></div>
+        </div>
+        <div class="grid-3" style="margin-top:24px">
+            <div class="card" data-guide="live-industrial"><div class="card-header"><div><div class="card-title">مواد اولیه و صنعتی</div><div class="card-sub">آهن، فولاد و سیمان</div></div><div class="kpi-icon bg-info" style="width:40px;height:40px;font-size:16px"><i class="fas fa-industry"></i></div></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-square" style="color:#475569"></i> شمش آهن</span><span class="lp-value" id="price-iron">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-square" style="color:#334155"></i> ورق فولادی</span><span class="lp-value" id="price-steel">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-tachometer-alt" style="color:#94a3b8"></i> میلگرد فولاد</span><span class="lp-value" id="price-rebar">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-paint-roller" style="color:#64748b"></i> سیمان (تن)</span><span class="lp-value" id="price-cement">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-bolt" style="color:#f59e0b"></i> مس (کیلوگرم)</span><span class="lp-value" id="price-copper">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-cube" style="color:#94a3b8"></i> آلومینیوم (کیلوگرم)</span><span class="lp-value" id="price-aluminum">در حال بارگذاری...</span></div></div>
+            <div class="card" data-guide="live-energy"><div class="card-header"><div><div class="card-title">انرژی و حامل‌ها</div><div class="card-sub">نفت، بنزین و گاز</div></div><div class="kpi-icon bg-danger" style="width:40px;height:40px;font-size:16px"><i class="fas fa-gas-pump"></i></div></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-oil-can" style="color:#ef4444"></i> نفت برنت (بشکه)</span><span class="lp-value" id="price-brent">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-oil-can" style="color:#f59e0b"></i> نفت وستا تگزاس</span><span class="lp-value" id="price-wti">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-gas-pump" style="color:#dc2626"></i> بنزین (لیتر)</span><span class="lp-value" id="price-gasoline">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-gas-pump" style="color:#fbbf24"></i> گازوئیل (لیتر)</span><span class="lp-value" id="price-diesel">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-fire" style="color:#0284c7"></i> گاز طبیعی (مترمکعب)</span><span class="lp-value" id="price-natgas">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-fire" style="color:#94a3b8"></i> مازوت (لیتر)</span><span class="lp-value" id="price-mazut">در حال بارگذاری...</span></div></div>
+            <div class="card" data-guide="live-global-stock"><div class="card-header"><div><div class="card-title">بورس‌های جهانی</div><div class="card-sub">شاخص‌های بین‌المللی</div></div><div class="kpi-icon bg-danger" style="width:40px;height:40px;font-size:16px"><i class="fas fa-globe"></i></div></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-building" style="color:#10b981"></i> داوجونز (DJI)</span><span class="lp-value" id="price-dji">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-building" style="color:#ef4444"></i> نزدک (NASDAQ)</span><span class="lp-value" id="price-nasdaq">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-building" style="color:#0284c7"></i> S&P 500</span><span class="lp-value" id="price-sp500">در حال بارگذاری...</span></div><div class="live-price-item"><span class="lp-name"><i class="fas fa-building" style="color:#f59e0b"></i> FTSE 100 (انگلیس)</span><span class="lp-value" id="price-ftse">در حال بارگذاری...</span></div></div>
+        </div>
+        <button class="ai-prompt-btn" onclick="generateAIPrompt('live-prices')"><i class="fas fa-robot"></i> تولید پرامپت تحلیل هوش مصنوعی برای این تب</button>
+    </div>
+</div>
+<script>
+const guideData = {
+    'revenue': {iconBox:'fa-money-bill-wave', title:'درآمد کل', subtitle:'Total Revenue', desc:'مجموع تمام درآمدهای شرکت شامل فروش کالا، خدمات و درآمدهای غیرعملیاتی.', formula:'درآمد فروش + درآمد غیرعملیاتی = درآمد کل', tips:'اگر این عدد رشد دارد اما سود خالص ثابت است، یعنی هزینه‌های شما سریع‌تر از درآمد در حال افزایش هستند.'},
+    'expense': {iconBox:'fa-receipt', title:'هزینه کل', subtitle:'Total Expenses', desc:'مجموع تمام هزینه‌های عملیاتی شرکت شامل بهای تمام شده، حقوق و هزینه‌های اداری.', formula:'بهای تمام شده + هزینه اداری + هزینه فروش = هزینه کل', tips:'اگر رشد هزینه‌ها از رشد درآمد بیشتر شود، حاشیه سود شما کاهش می‌یابد.'},
+    'profit': {iconBox:'fa-money-bill-trend-up', title:'سود خالص', subtitle:'Net Profit', desc:'سود واقعی شرکت پس از کسر تمام هزینه‌ها و مالیات.', formula:'درآمد کل - هزینه کل - مالیات = سود خالص', tips:'سود خالص مهم‌ترین شاخص سلامت شرکت است. اگر در حال کاهش باشد، سازمان در مسیر اشتباه قرار دارد.'},
+    'cash': {iconBox:'fa-wallet', title:'موجودی نقد', subtitle:'Cash Balance', desc:'مجموع پول نقد موجود در صندوق و تمام حساب‌های بانکی.', formula:'موجودی صندوق + بانک‌ها = موجودی نقد', tips:'موجودی نقد با سود خالص فرق دارد. شرکت ممکن است سودآور باشد اما نقدینگی‌اش صفر باشد چون پول‌ها گیر کرده است.'},
+    'receivables': {iconBox:'fa-file-invoice', title:'مطالبات از مشتریان', subtitle:'Accounts Receivable', desc:'مبالغی که مشتریان به شرکت بدهکارند و باید در آینده پرداخت کنند.', formula:'چک‌های دریافتی + فاکتورهای نسیه = کل مطالبات', tips:'اگر این عدد در حال رشد است ولی نقدینگی ثابت است، یعنی مشتریان دیرتر پرداخت می‌کنند.'},
+    'payables': {iconBox:'fa-credit-card', title:'بدهی به تامین‌کنندگان', subtitle:'Accounts Payable', desc:'مبالغی که شرکت به تامین‌کنندگان بدهکار است و باید پرداخت کند.', formula:'فاکتورهای پرداخت نشده + چک‌های سررسید نشده = کل بدهی‌ها', tips:'اگر بدهی‌ها سررسید گذشته باشند و نقدینگی کافی نباشد، اعتبار شرکت خراب می‌شود.'},
+    'sankey': {iconBox:'fa-stream', title:'نمودار جریان پول', subtitle:'Sankey Diagram', desc:'این نمودار بصری نشان می‌دهد پول از کدام منابع وارد شده و به کدام بخش‌ها خرج شده است.', formula:'ورودی‌ها (درآمد) -> خروجی‌ها (هزینه/سود)', tips:'به ضخامت خطوط نگاه کنید. ضخیم‌ترین خط خروجی، بزرگ‌ترین محل هدررفت یا مصرف پول شماست.'},
+    'finance-chart': {iconBox:'fa-chart-area', title:'نمودار درآمد و هزینه', subtitle:'Revenue vs Expense', desc:'روند درآمد و هزینه‌ها در ۸ ماه گذشته. فاصله بین دو خط نشان‌دهنده سود است.', formula:'خط سبز = درآمد، خط قرمز = هزینه', tips:'اگر خط سبز بالاتر باشد یعنی سودآور هستید. اگر خطوط به هم نزدیک شوند یعنی حاشیه سود در حال کاهش است.'},
+    'expense-chart': {iconBox:'fa-chart-pie', title:'تفکیک هزینه‌ها', subtitle:'Expense Breakdown', desc:'نشان می‌دهد هزینه‌ها در کدام بخش‌ها خرج شده است.', formula:'مجموع هزینه‌ها = حقوق + کالا + بازاریابی + اداری + مالیات', tips:'اگر سهم حقوق بیش از ۴۰٪ باشد، سازمان از نظر مالی سنگین است و باید بهره‌وری پرسنل افزایش یابد.'},
+    'cashflow': {iconBox:'fa-funnel-dollar', title:'جریان نقدینگی', subtitle:'Cash Flow', desc:'ورودی پول را در برابر خروجی پول در هفته‌های مختلف مقایسه می‌کند.', formula:'ورودی نقد - خروجی نقد = جریان نقدینگی خالص', tips:'اگر در یک هفته خروجی بیشتر باشد، حساب شرکت خالی می‌شود. باید پرداخت‌ها را در هفته‌های دیگر پخش کنید.'},
+    'health-score': {iconBox:'fa-heart-pulse', title:'امتیاز سلامت مالی', subtitle:'Financial Health Score', desc:'میانگین شاخص‌های نقدینگی، سودآوری و اهرمی سازمان.', formula:'میانگین وزنی شاخص‌های کلیدی = امتیاز سلامت', tips:'امتیاز بالای ۸۰ یعنی سازمان پایدار است. زیر ۵۰ یعنی سازمان در خطر بحران مالی است.'},
+    'current-ratio': {iconBox:'fa-balance-scale', title:'نسبت جاری', subtitle:'Current Ratio', desc:'توانایی شرکت در پرداخت بدهی‌های کوتاه‌مدت (یک سال آینده).', formula:'دارایی‌های جاری ÷ بدهی‌های جاری = نسبت جاری', tips:'عدد بالای ۱.۵ مطلوب است. زیر ۱ یعنی شرکت در خطر ورشکستگی کوتاه‌مدت قرار دارد.'},
+    'profit-margin': {iconBox:'fa-percentage', title:'حاشیه سود خالص', subtitle:'Net Profit Margin', desc:'از هر ۱۰۰ تومان فروش، چند تومان سود خالص می‌ماند.', formula:'(سود خالص ÷ درآمد کل) × ۱۰۰ = حاشیه سود', tips:'هرچه این درصد بالاتر باشد شرکت بهتر است. زیر ۱۰٪ یعنی شرکت در برابر تورم آسیب‌پذیر است.'},
+    'debt-ratio': {iconBox:'fa-landmark', title:'نسبت بدهی به دارایی', subtitle:'Debt to Asset', desc:'چند درصد از دارایی‌های شرکت با بدهی تامین شده است.', formula:'بدهی‌های کل ÷ دارایی‌های کل = نسبت بدهی', tips:'زیر ۵۰٪ مطلوب است. بالای ۷۰٪ یعنی شرکت به شدت وابسته به بدهی است.'},
+    'dso': {iconBox:'fa-hourglass-half', title:'دوره وصول مطالبات', subtitle:'Days Sales Outstanding', desc:'میانگین تعداد روزهایی که طول می‌کشد تا مشتریان بدهی خود را نقد کنند.', formula:'(مطالبات ÷ فروش کل) × ۳۶۵ = DSO', tips:'بالای ۶۰ روز یعنی پول شما در دست مشتریان گیر کرده. باید شرط‌های پرداخت را سخت‌تر کنید.'},
+    'pl-statement': {iconBox:'fa-file-contract', title:'صورت سود و زیان', subtitle:'P&L Statement', desc:'گزارشی که نشان می‌دهد شرکت در یک دوره چقدر سود یا زیان کرده است.', formula:'درآمدها - هزینه‌ها = سود خالص', tips:'برای بررسی روند سودآوری، این گزارش را با دوره‌های قبلی مقایسه کنید.'},
+    'balance-sheet': {iconBox:'fa-balance-scale-left', title:'ترازنامه', subtitle:'Balance Sheet', desc:'عکس لحظه‌ای از دارایی‌ها و بدهی‌های شرکت در یک روز مشخص.', formula:'دارایی‌ها = بدهی‌ها + حقوق صاحبان سهام', tips:'بررسی کنید که آیا دارایی‌های جاری بیشتر از بدهی‌های جاری است یا خیر.'},
+    'ar-aging': {iconBox:'fa-clock', title:'تحلیل موعود مطالبات', subtitle:'AR Aging', desc:'فاکتورهای صادر شده را بر اساس سررسید دسته‌بندی می‌کند.', formula:'تفکیک مطالبات به بازه‌های ۰-۳۰، ۳۰-۶۰ و +۶۰ روز', tips:'اقلام بالای ۶۰ روز به احتمال ۹۰٪ تبدیل به بدهی سوخت‌شده می‌شوند. باید پیگیری حقوقی شوند.'},
+    'ap-aging': {iconBox:'fa-calendar-times', title:'تحلیل موعود بدهی‌ها', subtitle:'AP Aging', desc:'بدهی‌های شرکت را بر اساس سررسید دسته‌بندی می‌کند.', formula:'تفکیک بدهی‌ها به بازه‌های زمانی', tips:'اگر اقلام بالای ۶۰ روز زیاد باشد، اعتبار شرکت نزد تامین‌کنندگان خراب می‌شود.'},
+    'checks-received': {iconBox:'fa-money-check', title:'چک‌های دریافتی', subtitle:'Received Checks', desc:'وضعیت چک‌هایی که از مشتریان دریافت کرده‌اید.', formula:'وصول شده + در جریان + برگشت خورده = کل چک‌ها', tips:'چک‌های برگشت خورده باید فوری به واحد حقوقی ارجاع شوند تا اعتراض زده شوند.'},
+    'checks-paid': {iconBox:'fa-money-check-alt', title:'چک‌های پرداختی', subtitle:'Paid Checks', desc:'وضعیت چک‌هایی که برای پرداخت به دیگران صادر کرده‌اید.', formula:'پرداخت شده + سررسید آینده = کل چک‌ها', tips:'مطمئن شوید موجودی بانک برای چک‌های سررسید آینده کافی است تا چک‌ها برگشت نخورند.'},
+    'agenda': {iconBox:'fa-calendar-day', title:'تقویم سررسید چک‌ها', subtitle:'Check Maturity Calendar', desc:'تاریخ سررسید چک‌های مهم در روزهای آینده.', formula:'لیست چک‌ها به تفکیک تاریخ سررسید', tips:'چک‌های پرداختی را یک روز قبل از سررسید در سیستم بانکی تایید کنید تا مشکلی پیش نیاید.'},
+    'bank-accounts': {iconBox:'fa-university', title:'موجودی حساب‌های بانکی', subtitle:'Bank Balances', desc:'موجودی هر حساب بانکی به همراه نمودار نوسانات آن.', formula:'مجموع موجودی بانک‌ها + صندوق = کل نقدینگی', tips:'اگر یک حساب خاص نوسانات شدید دارد، باید دلیل آن را بررسی کنید. ممکن است پرداخت‌ها از حساب اشتباه انجام شود.'},
+    'agenda-today': {iconBox:'fa-tasks', title:'تقویم مالی امروز', subtitle:'Today\'s Financial Agenda', desc:'جلسات، سررسید چک‌ها و اقدامات مالی مهم امروز.', formula:'لیست کارهای مالی امروز', tips:'اقدامات فوری (قرمز) را در ابتدای روز انجام دهید تا جریمه یا بدهی ایجاد نشود.'},
+    'top-products': {iconBox:'fa-trophy', title:'پرفروش‌ترین محصولات', subtitle:'Top Products', desc:'محصولاتی که بیشترین درآمد را برای شرکت ایجاد کرده‌اند.', formula:'جمع درآمد هر محصول در دوره', tips:'محصولاتی که فروش کمتری دارند را بررسی کنید. ممکن است نیاز به بازاریابی بیشتر یا حذف داشته باشند.'},
+    'dept-performance': {iconBox:'fa-chart-radar', title:'گردش کار بخش‌ها', subtitle:'Department Performance', desc:'مقایسه هدف و عملکرد ۵ بخش سازمان.', formula:'مقایسه هدف با عملکرد واقعی', tips:'بخش‌هایی که عملکردشان از هدف کمتر است نیاز به بررسی و آموزش منابع انسانی دارند.'},
+    'transactions': {iconBox:'fa-exchange-alt', title:'آخرین تراکنش‌های مالی', subtitle:'Recent Transactions', desc:'۱۰ تراکنش آخر ثبت شده در دفتر روزنامه.', formula:'ثبت اسناد حسابداری', tips:'اسناد در انتظار را برای تسویه نهایی تایید کنید. اسناد ناموفق باید بررسی و اصلاح شوند.'},
+    'analysis-summary': {iconBox:'fa-robot', title:'خلاصه مدیریتی', subtitle:'Executive Summary', desc:'تحلیل هوشمند وضعیت شرکت توسط سیستم.', formula:'تحلیل داده‌های مالی', tips:'این خلاصه را قبل از جلسات مدیریتی مطالعه کنید تا دید کلی داشته باشید.'},
+    'analysis-profit': {iconBox:'fa-chart-line', title:'تحلیل سودآوری', subtitle:'Profitability Analysis', desc:'بررسی رشد درآمد و هزینه و حاشیه سود.', formula:'مقایسه رشد درآمد و هزینه', tips:'برای حفظ حاشیه سود، استراتژی قیمت‌گذاری را بازنگری کنید.'},
+    'analysis-risk': {iconBox:'fa-exclamation-triangle', title:'ریسک نقدینگی و چک‌ها', subtitle:'Liquidity Risk', desc:'بررسی چک‌های برگشتی و تراکم سررسید‌ها.', formula:'مجموع چک‌های برگشتی و سررسید آینده', tips:'چک‌های برگشتی را فوری به حقوقی ارجاع دهید.'},
+    'analysis-cashflow': {iconBox:'fa-water', title:'جریان نقدینگی', subtitle:'Cash Flow Analysis', desc:'بررسی ورودی و خروجی وجه نقد در هفته‌های مختلف.', formula:'ورودی نقد - خروجی نقد', tips:'پرداخت‌ها را زمان‌بندی کنید تا تراکم خروج وجه رخ ندهد.'},
+    'analysis-tax': {iconBox:'fa-calculator', title:'تعهدات مالی و مالیات', subtitle:'Tax Obligations', desc:'بررسی سررسید مالیات‌ها و معوقات.', formula:'مالیات سررسید + مالیات معوق', tips:'مالیات سررسید را قبل از موعد بپردازید تا جریمه نشوید.'},
+    'forecast-cash': {iconBox:'fa-wallet', title:'پیش‌بینی نقدینگی', subtitle:'Cash Forecast', desc:'برآورد موجودی نقد در ماه‌های آینده بر اساس وصول چک‌ها.', formula:'موجودی فعلی + ورودی‌های قطعی - خروجی‌های قطعی', tips:'اگر پیش‌بینی نشان‌دهنده کاهش نقدینگی است، از الان برای تسهیلات اقدام کنید.'},
+    'forecast-revenue': {iconBox:'fa-chart-bar', title:'پیش‌بینی درآمد', subtitle:'Revenue Forecast', desc:'برآورد درآمد ماه‌های آینده بر اساس قراردادهای قطعی.', formula:'فروش قطعی + پیش‌بینی فروش نقدی', tips:'اگر پیش‌بینی کمتر از اهداف است، تیم فروش را برای جذب مشتری جدید ترغیب کنید.'},
+    'forecast-expense': {iconBox:'fa-fire', title:'پیش‌بینی هزینه‌ها', subtitle:'Expense Forecast', desc:'برآورد هزینه‌های ماه‌های آینده.', formula:'هزینه‌های ثابت + هزینه‌های متغیر پیش‌بینی شده', tips:'اگر پیش‌بینی هزینه‌ها زیاد است، بودجه‌بندی را محدودتر کنید.'},
+    'budget-chart': {iconBox:'fa-balance-scale-right', title:'نمودار انحرافات بودجه‌ای', subtitle:'Budget Variance', desc:'مقایسه بودجه مصوب با هزینه واقعی انجام شده.', formula:'هزینه واقعی - بودجه مصوب = انحراف', tips:'اگر هزینه واقعی از بودجه بیشتر است، باید دلایل انحراف را از مدیران بخش‌ها بخواهید.'},
+    'kpi-tracking-sales': {iconBox:'fa-bullseye', title:'تحقق اهداف فروش', subtitle:'Sales Target Tracking', desc:'نسبت فروش محقق شده به اهداف تعیین شده فصل.', formula:'(فروش واقعی ÷ هدف فروش) × ۱۰۰', tips:'اگر درصد تحقق پایین است، استراتژی بازاریابی را تغییر دهید.'},
+    'kpi-tracking-cost': {iconBox:'fa-tachometer-alt', title:'مدیریت سقف هزینه', subtitle:'Cost Ceiling Management', desc:'نسبت هزینه شده به سقف بودجه تعیین شده.', formula:'(هزینه واقعی ÷ بودجه کل) × ۱۰۰', tips:'اگر سریع مصرف شده، جلوی هزینه‌های غیرضروری را تا پایان فصل بگیرید.'},
+    'risk-bounced-check': {iconBox:'fa-times-circle', title:'ریسک چک برگشتی', subtitle:'Bounced Check Risk', desc:'چکی که به دلیل عدم موجودی برگشت خورده و نیازمند اقدام حقوقی است.', formula:'چک‌های برگشت خورده', tips:'آخرین مهلت اعتراض را بررسی کنید و فوری به وکیل شرکت ارجاع دهید.'},
+    'risk-tax': {iconBox:'fa-balance-scale-right', title:'سررسید مالیات', subtitle:'Tax Due Date', desc:'مهلت پرداخت مالیات که عدم پرداخت آن منجر به جریمه می‌شود.', formula:'مالیات سررسید شده', tips:'هرچه زودتر پرداخت کنید تا مشمول جریمه ۵ درصدی نشوید.'},
+    'risk-default-customer': {iconBox:'fa-user-slash', title:'مشتری نکول‌شده', subtitle:'Defaulted Customer', desc:'مشتریانی که بیش از ۶۰ روز بدهی خود را پرداخت نکرده‌اند.', formula:'مطالبات بالای ۶۰ روز', tips:'با این مشتریان تماس بگیرید یا در صورت لزوم فروش به آن‌ها را متوقف کنید.'},
+    'risk-check-concentration': {iconBox:'fa-money-check-alt', title:'تراکم چک پرداختی', subtitle:'Check Concentration', desc:'مجموع چک‌های پرداختی که در یک هفته سررسید می‌شوند.', formula:'مجموع چک‌های پرداختی هفته آینده', tips:'اگر تراکم چک‌ها با موجودی نقد همخوانی ندارد، چک‌ها را به تاریخ‌های بعدی منتقل کنید (در صورت توافق).'},
+    'proj-total': {iconBox:'fa-project-diagram', title:'پروژه‌های فعال', subtitle:'Active Projects', desc:'تعداد پروژه‌هایی که در حال حاضر در دست اجرا هستند.', formula:'COUNT(پروژه‌های وضعیت=فعال)', tips:'اگر تعداد پروژه‌های فعال بیش از ظرفیت سازمان باشد، کیفیت کار افتاد می‌کند.'},
+    'proj-profit': {iconBox:'fa-coins', title:'سود پروژه‌ها', subtitle:'Project Profit', desc:'مجموع سود خالص بدست آمده از پروژه‌های فعال.', formula:'درآمد پروژه - هزینه پروژه = سود پروژه', tips:'بررسی کنید کدام پروژه بیشترین سود را داشته تا منابع مشابه به آن اختصاص یابد.'},
+    'proj-progress': {iconBox:'fa-tasks', title:'میانگین پیشرفت', subtitle:'Avg Progress', desc:'درصد پیشرفت فیزیکی تمام پروژه‌های فعال.', formula:'مجموع پیشرفت پروژه‌ها ÷ تعداد', tips:'اگر پیشرفت با زمان همخوانی نداشته باشد، پروژه با تاخیر مواجه است.'},
+    'proj-risk': {iconBox:'fa-exclamation-triangle', title:'پروژه‌های ضررده', subtitle:'Loss-making Projects', desc:'پروژه‌هایی که هزینه انجامشان از درآمدشان بیشتر شده است.', formula:'هزینه واقعی > بودجه مصوب', tips:'این پروژه‌ها باید فوری بررسی شوند. ممکن است نیاز به مذاکره مجدد قرارداد باشند.'},
+    'proj-chart': {iconBox:'fa-chart-bar', title:'نمودار سودآوری پروژه‌ها', subtitle:'Project Profitability Chart', desc:'مقایسه درآمد و هزینه برای ۵ پروژه اخیر.', formula:'ستون سبز = درآمد، ستون قرمز = هزینه', tips:'ارتفاع ستون سبز از قرمز نشان‌دهنده میزان سود آن پروژه است.'},
+    'tax-paid': {iconBox:'fa-check-circle', title:'مالیات پرداخت شده', subtitle:'Paid Taxes', desc:'مجموع مالیات‌هایی که امسال به سازمان امور مالیاتی پرداخت شده.', formula:'جمع پرداختی‌های مالیاتی', tips:'این عدد باید با کسر مالیات در صورت سود و زیان همخوانی داشته باشد.'},
+    'tax-pending': {iconBox:'fa-clock', title:'مالیات معوق', subtitle:'Pending Taxes', desc:'مالیات‌هایی که سررسید شده‌اند اما هنوز پرداخت نشده‌اند.', formula:'مالیات سررسید شده - پرداخت شده', tips:'عدم پرداخت درمهلت مقرر منجر به جریمه و تحریم حساب‌ها می‌شود.'},
+    'tax-provision': {iconBox:'fa-piggy-bank', title:'رزرو مالیات', subtitle:'Tax Provision', desc:'مبلغی که برای مالیات آینده پیش‌بینی و رزرو شده است.', formula:'درصد قانونی × سود قبل از مالیات', tips:'این مبلغ را در حسابی جدا نگه دارید تا زمان سررسید دچار مشکل نقدینگی نشوید.'},
+    'tax-due': {iconBox:'fa-calendar-day', title:'سررسید بعدی', subtitle:'Next Due Date', desc:'تاریخ نزدیکترین موعد پرداخت مالیات.', formula:'تاریخ سررسید مالیات ارزش افزوده', tips:'۱۵ روز قبل از سررسید، اظهارنامه را ارسال و مالیات را پرداخت کنید.'},
+    'tax-chart': {iconBox:'fa-chart-line', title:'روند مالیات', subtitle:'Tax Trend', desc:'مقایسه سود قبل از مالیات با مالیات پرداختی در ۶ ماه اخیر.', formula:'ستون آبی = سود، ستون زرد = مالیات', tips:'اگر مالیات شما با سود همخوانی ندارد، ممکن است از سمت سازمان ممیزی شوید.'},
+    'equity-total': {iconBox:'fa-vault', title:'کل حقوق صاحبان سهام', subtitle:'Total Equity', desc:'سرمایه اولیه به علاوه سود انباشته شرکت.', formula:'سرمایه + سود انباشته = حقوق صاحبان سهام', tips:'این عدد نشان‌دهنده ارزش خالص شرکت برای سهامداران است.'},
+    'equity-roe': {iconBox:'fa-percentage', title:'بازگشت حقوق صاحبان سهام', subtitle:'Return on Equity (ROE)', desc:'نشان می‌دهد هر تومان سرمایه سهامداران چقدر سود ساخته است.', formula:'(سود خالص ÷ حقوق صاحبان سهام) × ۱۰۰', tips:'ROE بالای ۲۰٪ عالی است. اگر زیر نرخ بهره بانکی باشد، یعنی سرمایه‌گذاری در شرکت بی‌فایده بوده است.'},
+    'equity-eps': {iconBox:'fa-chart-line', title:'سود هر سهم', subtitle:'Earnings Per Share (EPS)', desc:'سود خالصی که به هر سهم شرکت تعلق می‌گیرد.', formula:'سود خالص ÷ تعداد سهام = EPS', tips:'این شاخص مهم‌ترین معیار سهامداران برای ارزیابی عملکرد شرکت است.'},
+    'equity-de': {iconBox:'fa-scale-unbalanced', title:'نسبت بدهی به حقوق', subtitle:'Debt to Equity Ratio', desc:'نسبت بدهی‌های شرکت به سرمایه سهامداران.', formula:'بدهی‌های کل ÷ حقوق صاحبان سهام', tips:'عدد زیر ۱ مطلوب است. بالای ۲ یعنی شرکت به جای سرمایه‌گذاری، با بدهی اداره می‌شود.'},
+    'equity-chart': {iconBox:'fa-chart-pie', title:'ساختار سرمایه', subtitle:'Capital Structure', desc:'ترکیب تامین مالی شرکت از طریق بدهی و سرمایه.', formula:'بدهی + حقوق صاحبان سهام = کل منابع', tips:'برای کاهش ریسک ورشکستگی، سهم حقوق صاحبان سهام باید بیشتر از بدهی باشد.'},
+    'live-currency': {iconBox:'fa-dollar-sign', title:'ارزهای اصلی', subtitle:'Foreign Exchange Rates', desc:'قیمت لحظه‌ای دلار، یورو و سایر ارزهای مرجع نسبت به تومان.', formula:'نرخ برابری ارز در بازار آزاد', tips:'نوسانات ارز مستقیما روی هزینه تامین کالا و قیمت فروش شما تاثیر دارد.'},
+    'live-crypto': {iconBox:'fa-bitcoin', title:'ارزهای دیجیتال', subtitle:'Cryptocurrencies', desc:'قیمت لحظه‌ای بیت کوین، اتریوم و سایر کریپتوها.', formula:'قیمت دلاری کریپتو × نرخ دلار تومان', tips:'اگر شرکت دارایی دیجیتال دارد، این بخش برای مدیریت نقدینگی آن حیاتی است.'},
+    'live-iran-stock': {iconBox:'fa-chart-line', title:'بورس ایران', subtitle:'Iran Stock Market', desc:'شاخص کل و هم‌وزن بورس اوراق بهادار تهران.', formula:'میانگین وزنی قیمت سهام', tips:'اگر شاخص بورس رشد کند، یعنا اقتصاد کشور نقدینگی بالایی دارد که می‌تواند روی تورم و هزینه‌ها شما هم تاثیر بگذارد.'},
+    'live-global-stock': {iconBox:'fa-globe', title:'بورس‌های جهانی', subtitle:'Global Stock Indices', desc:'شاخص بورس‌های آمریکا (داوجونز/نزدک) و اروپا.', formula:'قیمت جهانی شاخص بورس', tips:'رشد بورس‌های جهانی نشان‌دهنده رونق اقتصاد جهانی و افزایش قدرت خرید مشتریان بین‌المللی شماست.'},
+    'live-metals': {iconBox:'fa-gem', title:'فلزات گران‌بها', subtitle:'Precious Metals', desc:'قیمت لحظه‌ای طلا، نقره، پلاتین و پالادیوم در بازار جهانی و داخلی.', formula:'قیمت اونس جهانی × نرخ دلار + حباب محلی', tips:'طلا همزمان با دلار حرکت می‌کند. اگر طلا بالا برود و دلار ثابت بماند، یعنی تورم در ایران در حال افزایش است.'},
+    'live-industrial': {iconBox:'fa-industry', title:'مواد اولیه و صنعتی', subtitle:'Industrial Raw Materials', desc:'قیمت آهن، فولاد، سیمان، مس و آلومینیوم که زیربنای تولید هستند.', formula:'قیمت جهانی کالا + هزینه واردات + نرخ ارز', tips:'اگر شرکت شما تولیدی است، افزایش قیمت این مواد مستقیما حاشیه سود شما را کاهش می‌دهد. باید قیمت فروش را بالا ببرید یا موجودی انبار را زیاد کنید.'},
+    'live-energy': {iconBox:'fa-gas-pump', title:'انرژی و حامل‌ها', subtitle:'Energy & Fuels', desc:'قیمت نفت خام، بنزین، گازوئیل و گاز طبیعی.', formula:'قیمت جهانی بشکه + هزینه پالایش', tips:'نفت ماشین اقتصاد است. اگر نفت گران شود، هزینه‌های حمل و نقل و تامین کالای شما هم گران می‌شود. برای کاهش ریسک، قراردادهای حمل را ثابت کنید.'}
+};
+const drillData = {
+    'revenue': [{n:'فروش داخلی', a:6200, p:74}, {n:'صادرات', a:2200, p:26}],
+    'expense': [{n:'حقوق و دستمزد', a:1200, p:38}, {n:'تامین کالا', a:950, p:30}, {n:'بازاریابی', a:450, p:14}, {n:'هزینه اداری', a:300, p:9}, {n:'مالیات', a:200, p:6}]
+};
+let hoverTimer;
+document.querySelectorAll('[data-guide]').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        const guideKey = this.getAttribute('data-guide');
+        hoverTimer = setTimeout(() => { if(guideData[guideKey]) showGuide(guideData[guideKey]); }, 2000);
+    });
+    card.addEventListener('mouseleave', () => clearTimeout(hoverTimer));
+});
+function showGuide(data) {
+    document.getElementById('guideTitle').innerText = data.title;
+    document.getElementById('guideSubtitle').innerText = data.subtitle;
+    document.getElementById('guideDesc').innerText = data.desc;
+    document.getElementById('guideFormula').innerText = data.formula;
+    document.getElementById('guideTips').innerText = data.tips;
+    document.getElementById('guideIconBox').innerHTML = `<i class="fas ${data.iconBox}"></i>`;
+    document.getElementById('guidePanel').classList.add('active');
+    document.getElementById('guideOverlay').classList.add('active');
+}
+function drillDown(type) {
+    clearTimeout(hoverTimer);
+    const data = drillData[type];
+    document.getElementById('drillTitle').innerText = type === 'revenue' ? 'تجزیه درآمد کل' : 'تجزیه هزینه کل';
+    let html = '';
+    data.forEach(item => { html += `<tr><td style="font-weight:600">${item.n}</td><td>${item.a.toLocaleString('fa-IR')} میلیون</td><td>${item.p}٪</td></tr>`; });
+    document.getElementById('drillBody').innerHTML = html;
+    document.getElementById('drillPanel').classList.add('active');
+    document.getElementById('guideOverlay').classList.add('active');
+}
+function closeAllModals() {
+    document.getElementById('guidePanel').classList.remove('active');
+    document.getElementById('drillPanel').classList.remove('active');
+    document.getElementById('promptModal').classList.remove('active');
+    document.getElementById('guideOverlay').classList.remove('active');
+    closeReportModal();
+}
+function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(c => c.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+    if(tabId === 'forecast') calculateWhatIf();
+}
+function changePeriod(btn, period) {
+    document.querySelectorAll('.period-btn').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelector('.topbar p').innerText = `دوره گزارش: ${period} - آخرین بروزرسانی: لحظه‌ای`;
+}
+function toggleTheme() {
+    const root = document.documentElement;
+    const icon = document.getElementById('theme-icon');
+    if (root.getAttribute('data-theme') === 'dark') { root.removeAttribute('data-theme'); icon.className = 'fas fa-moon'; }
+    else { root.setAttribute('data-theme', 'dark'); icon.className = 'fas fa-sun'; }
+    renderCharts();
+}
+function toggleBoardroom() {
+    document.body.classList.toggle('boardroom');
+    renderCharts();
+}
+function toggleTicker() {
+    const ticker = document.getElementById('currencyTicker');
+    const showBtn = document.getElementById('showTickerBtn');
+    if (ticker.style.display === 'none') {
+        ticker.style.display = 'block';
+        showBtn.style.display = 'none';
+    } else {
+        ticker.style.display = 'none';
+        showBtn.style.display = 'flex';
+    }
+}
+function updateOrgName() {
+    const name = document.getElementById('orgNameSelect').value || 'سازمان';
+    document.getElementById('mainTitle').innerText = `گزارش جامع مالی ${name}`;
+    document.getElementById('sidebarOrgName').innerText = name;
+}
+function updateClock() {
+    const now = new Date();
+    document.getElementById('live-time').innerText = now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    document.getElementById('live-date-shamsi').innerText = now.toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById('live-date-miladi').innerText = now.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    document.getElementById('live-day-fa').innerText = now.toLocaleDateString('fa-IR', { weekday: 'long' });
+    document.getElementById('live-day-en').innerText = now.toLocaleDateString('en-US', { weekday: 'long' });
+    document.getElementById('last-updated').innerText = now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+}
+setInterval(updateClock, 1000); updateClock();
+function generateAIPrompt(tabId) {
+    const org = document.getElementById('orgNameSelect').value;
+    let p = "";
+    if(tabId==='dashboard'){p`Act as a CFO Financial Analyst. Analyze the current financial snapshot for ${org}. KPIs: Total Revenue: 8.4B, Expenses: 3.1B, Net Profit: 5.3B, Cash: 12.8B, AR: 2.4B, AP: 1.8B. Ratios: Current Ratio 1.8, Profit Margin 63%, DSO 45 days. AR Aging: 4% over 60 days. Bounced Checks: 85M. Provide actionable insights on liquidity, profitability, and potential risks.`}
+    else if(tabId==='analysis'){p`Act as a financial advisor. Here is the executive summary and risk analysis for ${org}: Revenue grew 12% vs expenses 4.5%. Bounced checks: 85M. Tax due: 320M. Based on this, what immediate actions should the CFO take to improve cash flow and mitigate risks?`}
+    else if(tabId==='forecast'){const d=document.getElementById('dollarSlider').value;const m=document.getElementById('mktSlider').value;const h=document.getElementById('hrSlider').value;const profit=document.getElementById('whatifResult').innerText;p`Act as a financial modeler. We are running a What-If scenario for ${org}. Variables: Currency rate impact ${d}%, Marketing cost change ${m}%, HR cost change ${h}%. Resulting Projected Profit: ${profit}. Analyze this scenario. Is this sustainable? What budget optimizations do you recommend?`}
+    else if(tabId==='risk'){p`Act as a risk management expert. Here are the current critical risks for ${org}: 1. Bounced check (85M) needs legal action. 2. Tax due in 15 days (320M). 3. Defaulted customer (100M). Provide a step-by-step mitigation plan.`}
+    else if(tabId==='projects'){p`Act as a project portfolio manager for ${org}. We have 18 active projects, 2 are loss-making. Profit is 3.8B. Project 'Technical Docs' is over budget by 20M. How should we reallocate resources?`}
+    else if(tabId==='tax'){p`Act as a tax consultant for ${org}. Paid taxes: 1.2B, Pending: 320M (due in 10 days), Provision: 880M. One tax return (120M) is under objection. Advise on compliance and cash flow management.`}
+    else if(tabId==='equity'){p`Act as an investor relations manager for ${org}. Total Equity: 8.5B, ROE: 28%, EPS: 1250. Debt to Equity: 0.54. Last year dividend: 2.1B. Evaluate the capital structure and dividend policy.`}
+    else if(tabId==='live-prices'){p`Act as a macroeconomic analyst for ${org}. Live market data: USD: 62,500, BTC: $62,400, TEDPIX: 2.1M, Brent Oil: $82.5, Gold: $2,400. How do these global and local market conditions impact a domestic manufacturing company's costs and revenue?`}
+    document.getElementById('promptText').value = p;
+    document.getElementById('promptModal').classList.add('active');
+    document.getElementById('guideOverlay').classList.add('active');
+}
+function copyPrompt() {
+    const text = document.getElementById('promptText');
+    text.select();
+    text.setSelectionRange(0, 99999);
+    document.execCommand('copy');
+    alert('پرامپت کپی شد! آن را در ChatGPT یا Claude پیست کنید.');
+}
+function calculateWhatIf() {
+    const d = parseInt(document.getElementById('dollarSlider').value);
+    const m = parseInt(document.getElementById('mktSlider').value);
+    const h = parseInt(document.getElementById('hrSlider').value);
+    document.getElementById('dollarVal').innerText = `${d}٪`;
+    document.getElementById('mktVal').innerText = `${m}٪`;
+    document.getElementById('hrVal').innerText = `${h}٪`;
+    let baseProfit = 5300;
+    let revenueChange = baseProfit _1.5_ (d / 100);
+    let mktChange = -450 * (m / 100);
+    let hrChange = -1200 * (h / 100);
+    let newProfit = baseProfit + revenueChange + mktChange + hrChange;
+    document.getElementById('whatifResult').innerText = `${newProfit.toFixed(1)} میلیارد تومان`;
+    let diff = newProfit - baseProfit;
+    if (diff > 0) {
+        document.getElementById('whatifResult').style.color = 'var(--success)';
+        document.getElementById('whatifChange').innerText = `افزایش ${diff.toFixed(1)} میلیارد نسبت به حالا`;
+    } else if (diff < 0) {
+        document.getElementById('whatifResult').style.color = 'var(--danger)';
+        document.getElementById('whatifChange').innerText = `کاهش ${Math.abs(diff).toFixed(1)} میلیارد نسبت به حالا`;
+    } else {
+        document.getElementById('whatifResult').style.color = 'var(--success)';
+        document.getElementById('whatifChange').innerText = `بدون تغییر نسبت به حالا`;
+    }
+}
+const tickerItems = [
+    {icon:'fas fa-dollar-sign', name:'دلار آمریکا', price:'...', change:0}, {icon:'fas fa-euro-sign', name:'یورو اروپا', price:'...', change:0}, {icon:'fas fa-yen-sign', name:'ین ژاپن', price:'...', change:0}, {icon:'fas fa-pound-sign', name:'پوند انگلیس', price:'...', change:0}, {icon:'fab fa-bitcoin', name:'بیت کوین', price:'...', change:0}, {icon:'fab fa-ethereum', name:'اتریوم', price:'...', change:0}, {icon:'fab fa-monero', name:'تتر', price:'...', change:0}, {icon:'fab fa-dogecoin', name:'دوج کوین', price:'...', change:0}, {icon:'fas fa-chart-bar', name:'شاخص کل', price:'...', change:0}, {icon:'fas fa-chart-bar', name:'شاخص هم‌وزن', price:'...', change:0}, {icon:'fas fa-chart-bar', name:'فرابورس', price:'...', change:0}, {icon:'fas fa-chart-bar', name:'شاخص صنعت', price:'...', change:0}, {icon:'fas fa-building', name:'داوجونز', price:'...', change:0}, {icon:'fas fa-building', name:'نزدک', price:'...', change:0}, {icon:'fas fa-building', name:'S&P 500', price:'...', change:0}, {icon:'fas fa-building', name:'FTSE 100', price:'...', change:0}, {icon:'fas fa-coins', name:'اونس طلا', price:'...', change:0}, {icon:'fas fa-circle-notch', name:'نقره', price:'...', change:0}, {icon:'fas fa-square', name:'پلاتین', price:'...', change:0}, {icon:'fas fa-square', name:'پالادیوم', price:'...', change:0}, {icon:'fas fa-industry', name:'شمش آهن', price:'...', change:0}, {icon:'fas fa-square', name:'ورق فولادی', price:'...', change:0}, {icon:'fas fa-tachometer-alt', name:'میلگرد فولاد', price:'...', change:0}, {icon:'fas fa-paint-roller', name:'سیمان', price:'...', change:0}, {icon:'fas fa-bolt', name:'مس', price:'...', change:0}, {icon:'fas fa-cube', name:'آلومینیوم', price:'...', change:0}, {icon:'fas fa-oil-can', name:'نفت برنت', price:'...', change:0}, {icon:'fas fa-oil-can', name:'نفت وستا', price:'...', change:0}, {icon:'fas fa-gas-pump', name:'بنزین', price:'...', change:0}, {icon:'fas fa-gas-pump', name:'گازوئیل', price:'...', change:0}, {icon:'fas fa-fire', name:'گاز طبیعی', price:'...', change:0}, {icon:'fas fa-fire', name:'مازوت', price:'...', change:0}
+];
+let tickerOffset = 0, tickerPlaying = true, tickerSpeed = 1, speedIdx = 1;
+const speeds = [0.5, 1, 2, 4];
+function buildTickerHTML() {
+    let html = '';
+    tickerItems.forEach((item, idx) => {
+        const down = item.change < 0;
+        html += `<span class="ticker-item" data-idx="${idx}"><i class="${item.icon}"></i> <span class="label">${item.name}</span> <span class="ticker-price-pill">${item.price}</span> <span class="ticker-change ${down ? 'down' : ''}">${Math.abs(item.change).toFixed(1)}%</span></span>`;
+    });
+    return html + html;
+}
+function updateTickerPrices() {
+    tickerItems.forEach(item => {
+        item.change = item.change + (Math.random() - 0.5) * 0.8;
+        item.change = Math.max(-9.9, Math.min(9.9, item.change));
+    });
+    const track = document.getElementById('tickerTrack');
+    track.innerHTML = buildTickerHTML();
+}
+function animateTicker() {
+    const track = document.getElementById('tickerTrack');
+    if (!track) return;
+    if (tickerPlaying) {
+        tickerOffset -= tickerSpeed;
+        const trackWidth = track.scrollWidth / 2;
+        if (Math.abs(tickerOffset) >= trackWidth) {
+            tickerOffset = 0;
+            updateTickerPrices();
+        }
+        track.style.transform = `translateX(${tickerOffset}px)`;
+    }
+    requestAnimationFrame(animateTicker);
+}
+function toggleTickerPause() {
+    tickerPlaying = !tickerPlaying;
+    document.getElementById('tickerPauseIcon').className = tickerPlaying ? 'fas fa-pause' : 'fas fa-play';
+}
+function changeTickerSpeed() {
+    speedIdx = (speedIdx + 1) % speeds.length;
+    tickerSpeed = speeds[speedIdx];
+    document.getElementById('tickerSpeedLabel').innerText = tickerSpeed + 'x';
+}
+document.getElementById('tickerTrack').innerHTML = buildTickerHTML();
+animateTicker();
+let charts = {};
+function renderCharts() {
+    Object.values(charts).forEach(c => c && c.destroy());
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const gridColor = isDark ? '#334155' : '#f1f5f9';
+    Chart.defaults.font.family = 'Vazirmatn';
+    Chart.defaults.color = textColor;
+    const ctx1 = document.getElementById('financeChart').getContext('2d');
+    const rg = ctx1.createLinearGradient(0, 0, 0, 300); rg.addColorStop(0, 'rgba(16,185,129,0.3)'); rg.addColorStop(1, 'rgba(16,185,129,0)');
+    charts.fin = new Chart(ctx1, { type: 'line', data: { labels: ['اسفند','فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور'], datasets: [{ label:'درآمد', data:[5.8,6.2,7.1,6.8,7.5,8.4,8.1], borderColor:'#10b981', backgroundColor:rg, tension:.4, fill:true, borderWidth:3 }, { label:'هزینه', data:[2.5,2.8,3.2,2.9,3.0,3.1,2.7], borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,0.1)', tension:.4, fill:true, borderWidth:3 }] }, options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}, scales:{y:{grid:{color:gridColor}}} } });
+    charts.exp = new Chart(document.getElementById('expenseChart').getContext('2d'), { type: 'doughnut', data: { labels:['حقوق','کالا','بازاریابی','اداری','مالیات'], datasets:[{ data:[1200,950,450,300,200], backgroundColor:['#4f46e5','#0ea5e9','#10b981','#f59e0b','#ef4444'], borderWidth:0 }] }, options: { responsive:true, maintainAspectRatio:false, cutout:'75%', plugins:{legend:{position:'bottom'}} } });
+    charts.cash = new Chart(document.getElementById('cashFlowChart').getContext('2d'), { type: 'bar', data: { labels:['هفته ۱','هفته ۲','هفته ۳','هفته ۴'], datasets:[{ label:'ورودی نقد', data:[1.5,2.1,1.8,2.5], backgroundColor:'#10b981', borderRadius:8 }, { label:'خروجی نقد', data:[1.2,0.8,1.5,1.1], backgroundColor:'#ef4444', borderRadius:8 }] }, options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}, scales:{y:{grid:{color:gridColor}}} } });
+    charts.bal = new Chart(document.getElementById('balanceChart').getContext('2d'), { type: 'doughnut', data: { labels:['وجه نقد','مطالبات','موجودی','املاک'], datasets:[{ data:[12.8,2.4,1.85,4.8], backgroundColor:['#4f46e5','#0ea5e9','#10b981','#f59e0b'], borderWidth:0 }] }, options: { responsive:true, maintainAspectRatio:false, cutout:'60%', plugins:{legend:{position:'right'}} } });
+    charts.ar = new Chart(document.getElementById('arChart').getContext('2d'), { type: 'bar', data: { labels:['سررسید نرسیده','۱-۳۰ روز','۳۱-۶۰ روز','+۶۰ روز'], datasets:[{ label:'مبلغ', data:[1500,620,180,100], backgroundColor:['#10b981','#f59e0b','#f59e0b','#ef4444'], borderRadius:8 }] }, options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{grid:{color:gridColor}}} } });
+    charts.ap = new Chart(document.getElementById('apChart').getContext('2d'), { type: 'bar', data: { labels:['سررسید نرسیده','۱-۳۰ روز','۳۱-۶۰ روز','+۶۰ روز'], datasets:[{ label:'مبلغ', data:[1100,450,150,100], backgroundColor:['#10b981','#f59e0b','#f59e0b','#ef4444'], borderRadius:8 }] }, options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{grid:{color:gridColor}}} } });
+    charts.dept = new Chart(document.getElementById('deptChart').getContext('2d'), { type: 'radar', data: { labels:['فروش','تولید','بازاریابی','مالی','منابع انسانی'], datasets:[{ label:'هدف', data:[100,80,90,70,60], borderColor:'#94a3b8', backgroundColor:'rgba(148,163,184,0.2)', borderWidth:2 }, { label:'عملکرد', data:[90,85,75,80,65], borderColor:'#4f46e5', backgroundColor:'rgba(79,70,229,0.2)', borderWidth:2 }] }, options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}, scales:{r:{grid:{color:gridColor}, angleLines:{color:gridColor}, pointLabels:{font:{size:12}}}} } });
+    charts.bud = new Chart(document.getElementById('budgetChart').getContext('2d'), { type: 'bar', data: { labels:['حقوق','تامین کالا','بازاریابی','اداری','مالیات'], datasets:[{ label:'بودجه مصوب', data:[1300,1000,500,350,250], backgroundColor:'#94a3b8', borderRadius:8 }, { label:'هزینه واقعی', data:[1200,950,450,300,200], backgroundColor:'#4f46e5', borderRadius:8 }] }, options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}, scales:{y:{grid:{color:gridColor}}} } });
+    charts.proj = new Chart(document.getElementById('projectChart').getContext('2d'), { type: 'bar', data: { labels:['پروژه پارس','پورتال سازمانی','مستندات فنی','پروژه البرز','پروژه سینا'], datasets:[{ label:'بودجه', data:[1500,900,300,1200,600], backgroundColor:'#94a3b8', borderRadius:8 }, { label:'هزینه واقعی', data:[1100,650,320,1000,450], backgroundColor:'#4f46e5', borderRadius:8 }] }, options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}, scales:{y:{grid:{color:gridColor}}} } });
+    charts.tax = new Chart(document.getElementById('taxChart').getContext('2d'), { type: 'bar', data: { labels:['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور'], datasets:[{ label:'سود قبل از مالیات', data:[5.8,6.2,7.1,6.8,7.5,8.4], backgroundColor:'#4f46e5', borderRadius:8 }, { label:'مالیات پرداختی', data:[1.2,1.3,1.5,1.4,1.6,1.8], backgroundColor:'#f59e0b', borderRadius:8 }] }, options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}, scales:{y:{grid:{color:gridColor}}} } });
+    charts.equity = new Chart(document.getElementById('equityChart').getContext('2d'), { type: 'doughnut', data: { labels:['حقوق صاحبان سهام','بدهی بلندمدت','سود انباشته'], datasets:[{ data:[8.5,5.3,1.3], backgroundColor:['#8b5cf6','#ef4444','#10b981'], borderWidth:0 }] }, options: { responsive:true, maintainAspectRatio:false, cutout:'75%', plugins:{legend:{position:'bottom'}} } });
+
+const sd = document.getElementById('sankeyChart');
+if (sd) {
+    if (window.sankeyChartInstance) window.sankeyChartInstance.dispose();
+    window.sankeyChartInstance = echarts.init(sd, isDark ? 'dark' : 'light');
+    window.sankeyChartInstance.setOption({
+        tooltip: { trigger: 'item' },
+        series: {
+            type: 'sankey',
+            data: [{name:'فروش داخلی'},{name:'صادرات'},{name:'درآمد کل'},{name:'هزینه کالا'},{name:'حقوق پرسنل'},{name:'بازاریابی'},{name:'سود خالص'}],
+            links: [
+                {source:'فروش داخلی', target:'درآمد کل', value:6200},
+                {source:'صادرات', target:'درآمد کل', value:2200},
+                {source:'درآمد کل', target:'هزینه کالا', value:950},
+                {source:'درآمد کل', target:'حقوق پرسنل', value:1200},
+                {source:'درآمد کل', target:'بازاریابی', value:450},
+                {source:'درآمد کل', target:'سود خالص', value:5300}
+            ],
+            emphasis: { focus: 'adjacency' },
+            lineStyle: { color: 'gradient', curveness: 0.5 },
+            itemStyle: { borderWidth: 0 }
+        }
+    });
+    window.addEventListener('resize', () => window.sankeyChartInstance.resize());
+}
+
+}
+// Text Report Modal
+function generateTextReport() {
+    const org = document.getElementById('orgNameSelect').value;
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' });
+    const timeStr = now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+    const html =         <h1>گزارش جامع تحلیلی مالی ${org}</h1>         <div class="rpt-header-info">             <div>تاریخ تولید: ${dateStr}</div>             <div>ساعت: ${timeStr}</div>             <div>دوره گزارش: مرداد ۱۴۰۳</div>             <div>تدوین‌کننده: مریم حسینی (مدیر مالی)</div>         </div>         <h2>۱. خلاصه مدیریتی (Executive Summary)</h2>         <div class="rpt-text-block">             در دوره مرداد ۱۴۰۳، سازمان با رشد ۱۲ درصدی درآمد به ۸.۴ میلیارد تومان عملکرد موفقی داشته است. کنترل هزینه‌ها باعث شد تا سود خالص ۲۰ درصد رشد کند. با این حال، بخش حساب‌های دریافتی نیازمند توجه است؛ زیرا ۱۰۰ میلیون تومان چک برگشت خورده ثبت شده است. توصیه می‌شود پیش از سررسید مالیات (۱۵ شهریور)، تراز بانکی برای پرداخت ۳۲۰ میلیون تومان مالیات جدا شود.         </div>         <h2>۲. شاخص‌های کلیدی عملکرد (KPIs)</h2>         <table>             <tr><th>شاخص</th><th>مقدار</th><th>روند</th></tr>             <tr><td>درآمد کل</td><td>۸.۴ میلیارد ت</td><td>۱۲٪ رشد</td></tr>             <tr><td>هزینه کل</td><td>۳.۱ میلیارد ت</td><td>۴.۵٪ رشد</td></tr>             <tr><td>سود خالص</td><td>۵.۳ میلیارد ت</td><td>۲۰٪ رشد</td></tr>             <tr><td>موجودی نقد</td><td>۱۲.۸ میلیارد ت</td><td>ثابت</td></tr>             <tr><td>مطالبات از مشتریان</td><td>۲.۴ میلیارد ت</td><td>۸٪ کاهش</td></tr>             <tr><td>بدهی به تامین‌کنندگان</td><td>۱.۸ میلیارد ت</td><td>۳٪ کاهش</td></tr>         </table>         <h2>۳. شاخص‌های مالی و نسبت‌ها</h2>         <table>             <tr><th>نسبت</th><th>مقدار</th><th>وضعیت</th></tr>             <tr><td>نسبت جاری (Current Ratio)</td><td>۱.۸</td><td>مطلوب</td></tr>             <tr><td>نسبت آنی (Quick Ratio)</td><td>۱.۲</td><td>مطلوب</td></tr>             <tr><td>حاشیه سود خالص</td><td>۶۳٪</td><td>عالی</td></tr>             <tr><td>بازگشت سرمایه (ROI)</td><td>۲۴٪</td><td>عالی</td></tr>             <tr><td>نسبت بدهی به دارایی</td><td>۰.۳۵</td><td>متوسط</td></tr>             <tr><td>دوره وصول مطالبات (DSO)</td><td>۴۵ روز</td><td>نیازمند بهبود</td></tr>             <tr><td>دوره گردش موجودی</td><td>۳۲ روز</td><td>مطلوب</td></tr>         </table>         <h2>۴. صورت‌های مالی خلاصه</h2>         <h3>صورت سود و زیان (P&L)</h3>         <table>             <tr><th>شرح</th><th>مبلغ (تومان)</th></tr>             <tr><td>فروش کالا و خدمات</td><td>۸,۴۰۰,۰۰۰,۰۰۰</td></tr>             <tr><td>جمع درآمدها</td><td>۸,۵۵۰,۰۰۰,۰۰۰</td></tr>             <tr><td>بهای تمام شده کالای فروش رفته</td><td>۳,۱۰۰,۰۰۰,۰۰۰</td></tr>             <tr><td>هزینه‌های فروش و اداری</td><td>۹۵۰,۰۰۰,۰۰۰</td></tr>             <tr><td>جمع هزینه‌ها</td><td>۴,۱۳۰,۰۰۰,۰۰۰</td></tr>             <tr style="font-weight:bold; background:#f1f5f9"><td>سود خالص دوره</td><td>۴,۴۲۰,۰۰۰,۰۰۰</td></tr>         </table>         <h3>ترازنامه خلاصه</h3>         <table>             <tr><th>شرح</th><th>مبلغ (میلیارد ت)</th></tr>             <tr><td>وجه نقد و بانک</td><td>۱۲.۸</td></tr>             <tr><td>مطالبات تجاری</td><td>۲.۴</td></tr>             <tr><td>موجودی کالا</td><td>۱.۸۵</td></tr>             <tr><td>املاک و تجهیزات</td><td>۴.۸</td></tr>             <tr style="font-weight:bold; background:#f1f5f9"><td>جمع کل دارایی‌ها</td><td>۱۵.۱</td></tr>         </table>         <h2>۵. مدیریت چک‌ها و بانک‌ها</h2>         <table>             <tr><th>شرح</th><th>مبلغ (میلیون ت)</th><th>وضعیت</th></tr>             <tr><td>چک دریافتی وصول شده</td><td>۹۸۰</td><td>مطلوب</td></tr>             <tr><td>چک دریافتی در جریان</td><td>۳۲۰</td><td>در انتظار</td></tr>             <tr><td>چک دریافتی برگشت خورده</td><td>۸۵</td><td>ریسک بالا</td></tr>             <tr><td>چک پرداختی سررسید آینده</td><td>۴۵۰</td><td>نیازمند تنخواه</td></tr>         </table>         <h2>۶. مرکز ریسک‌ها و هشدارها</h2>         <div class="rpt-text-block rpt-risk-high">             <strong>۱. چک برگشت خورده بحرانی - مبلغ ۸۵ میلیون تومان</strong><br>             چک شرکت "بازرگانی آریا" به دلیل عدم موجودی کافی برگشت خورده است. آخرین مهلت اعتراض وام روز جمعه است. <br>             <em>اقدام پیشنهادی: ارجاع فوری به واحد حقوقی برای اعتراض.</em>         </div>         <div class="rpt-text-block rpt-risk-high">             <strong>۲. سررسید مالیات ارزش افزوده - ۳۲۰ میلیون تومان</strong><br>             مهلت ارسال اظهارنامه و پرداخت مالیات مرحله اول تا ۱۵ شهریور ماه است. عدم پرداخت منجر به جریمه ۵٪ خواهد شد.<br>             <em>اقدام پیشنهادی: پرداخت فوری از طریق سامانه مالیاتی.</em>         </div>         <div class="rpt-text-block rpt-risk-medium">             <strong>۳. مشتری نکول‌شده - ۱۰۰ میلیون تومان</strong><br>             ۲ فقره فاکتور از شرکت "صنایع غذایی سامان" بیش از ۶۰ روز از سررسید گذشته است و پاسخگویی نمی‌کنند.<br>             <em>اقدام پیشنهادی: توقف صدور فاکتور جدید و پیگیری حقوقی.</em>         </div>         <h2>۷. وضعیت پروژه‌ها</h2>         <table>             <tr><th>شاخص</th><th>مقدار</th></tr>             <tr><td>تعداد پروژه‌های فعال</td><td>۱۸ عدد</td></tr>             <tr><td>سود پروژه‌ها</td><td>۳.۸ میلیارد ت</td></tr>             <tr><td>میانگین پیشرفت فیزیکی</td><td>۶۵٪</td></tr>             <tr><td>پروژه‌های ضررده</td><td>۲ عدد</td></tr>         </table>         <h2>۸. وضعیت مالیات</h2>         <table>             <tr><th>شرح</th><th>مبلغ (میلیون ت)</th></tr>             <tr><td>مالیات پرداخت شده امسال</td><td>۱,۲۰۰</td></tr>             <tr><td>مالیات معوق (سررسید شده)</td><td>۳۲۰</td></tr>             <tr><td>رزرو مالیات (پیش‌بینی سود آینده)</td><td>۸۸۰</td></tr>         </table>         <h2>۹. ساختار سرمایه و سهامداران</h2>         <table>             <tr><th>شاخص</th><th>مقدار</th></tr>             <tr><td>کل حقوق صاحبان سهام</td><td>۸.۵ میلیارد ت</td></tr>             <tr><td>بازگشت حقوق صاحبان سهام (ROE)</td><td>۲۸٪</td></tr>             <tr><td>سود هر سهم (EPS)</td><td>۱,۲۵۰ ت</td></tr>             <tr><td>نسبت بدهی به حقوق</td><td>۰.۵۴</td></tr>         </table>         <h2>۱۰. قیمت‌های زنده بازار (لحظه تولید گزارش)</h2>         <table>             <tr><th>نام</th><th>قیمت</th><th>تغییر</th></tr>             <tr><td>دلار آمریکا</td><td id="rpt-usd">...</td><td>۰.۸٪+</td></tr>             <tr><td>یورو اروپا</td><td id="rpt-eur">...</td><td>۰.۴٪-</td></tr>             <tr><td>بیت کوین (BTC)</td><td id="rpt-btc">...</td><td>۲.۱٪+</td></tr>             <tr><td>شاخص کل بورس</td><td>۲.۱ م</td><td>۰.۵٪+</td></tr>             <tr><td>اونس طلا</td><td id="rpt-gold">...</td><td>۰.۶٪+</td></tr>             <tr><td>نفت برنت</td><td id="rpt-brent">...</td><td>۱.۰٪-</td></tr>             <tr><td>شمش آهن</td><td>۶۵,۰۰۰</td><td>۱.۵٪+</td></tr>         </table>         <div class="rpt-footer">             این گزارش به صورت خودکار توسط سامانه جامع مدیریت مالی ${org} تولید شده است.<br>             برای تحلیل عمیق‌تر این داده‌ها توسط هوش مصنوعی، از دکمه "تولید پرامپت تحلیل هوش مصنوعی" در پنل اصلی استفاده کنید.         </div>    ;
+    document.getElementById('reportContent').innerHTML = html;
+    document.getElementById('reportModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeReportModal() {
+    document.getElementById('reportModal').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+// ================= LIVE API INTEGRATION (FREE MARKET) =================
+async function fetchLivePrices() {
+    try {
+        // 1. دریافت نرخ تتر (دلار بازار آزاد) از نوبیتکس
+        const resNobitex = await fetch('https://api.nobitex.ir/market/stats?srcCurrency=usdt&amp;dstCurrency=rls');
+        const nobitexData = await resNobitex.json();
+        const usdToman = parseFloat(nobitexData.data["usdt-rls"].latest) / 10; // ریال به تومان
+        // 2. دریافت نرخ یورو، ین و پوند نسبت به دلار (جهانی)
+        const resForex = await fetch('https://open.er-api.com/v6/latest/USD');
+        const forex = await resForex.json();
+        const eurPerUsd = forex.rates.EUR;
+        const gbpPerUsd = forex.rates.GBP;
+        const jpyPerUsd = forex.rates.JPY;
+        // محاسبه نرخ تومانی ارزها
+        const eurToman = (1 / eurPerUsd) * usdToman;
+        const gbpToman = (1 / gbpPerUsd) * usdToman;
+        const jpyToman = (1 / jpyPerUsd) * usdToman;
+        // 3. دریافت قیمت دلاری کریپتوها از CoinGecko
+        const resCrypto = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether,dogecoin&amp;vs_currencies=usd');
+        const crypto = await resCrypto.json();
+        const btcUsd = crypto.bitcoin.usd;
+        const ethUsd = crypto.ethereum.usd;
+        const dogeUsd = crypto.dogecoin.usd;
+        // 4. دریافت قیمت دلاری اونس طلا از Gold-API
+        let goldUsd = 0;
+        try {
+            const resGold = await fetch('https://api.gold-api.com/price/XAU');
+            const goldData = await resGold.json();
+            goldUsd = goldData.price;
+        } catch(e) { goldUsd = 2400; }
+        // محاسبه قیمت تومانی کریپتو و طلا
+        const btcToman = btcUsd * usdToman;
+        const ethToman = ethUsd * usdToman;
+        const dogeToman = dogeUsd * usdToman;
+        const goldToman = goldUsd * usdToman;
+        // تابع فرمت کردن اعداد بزرگ تومانی
+        function formatToman(val) {
+            if (val > 1000000000) return (val / 1000000000).toFixed(2) + ' م‌ت'; // میلیارد تومان
+            return Math.round(val).toLocaleString('fa-IR');
+        }
+        // 5. آپدیت کردن UI (تب قیمت‌های زنده)
+        document.getElementById('price-usd').innerHTML = ${Math.round(usdToman).toLocaleString('fa-IR')} <span class="lp-change">۰.۸٪+</span>;
+        document.getElementById('price-eur').innerHTML = ${Math.round(eurToman).toLocaleString('fa-IR')} <span class="lp-change down">۰.۴٪-</span>;
+        document.getElementById('price-jpy').innerHTML = ${Math.round(jpyToman).toLocaleString('fa-IR')} <span class="lp-change">۱.۲٪+</span>;
+        document.getElementById('price-gbp').innerHTML = ${Math.round(gbpToman).toLocaleString('fa-IR')} <span class="lp-change">۰.۵٪+</span>;
+    document.getElementById('price-btc').innerHTML = `${formatToman(btcToman)} <span class="lp-change">۲.۱٪+</span>`;
+    document.getElementById('price-eth').innerHTML = `${formatToman(ethToman)} <span class="lp-change">۱.۵٪+</span>`;
+    document.getElementById('price-usdt').innerHTML = `${Math.round(usdToman).toLocaleString('fa-IR')} <span class="lp-change down">۰.۱٪-</span>`;
+    document.getElementById('price-doge').innerHTML = `${formatToman(dogeToman)} <span class="lp-change">۵.۴٪+</span>`;
+
+    document.getElementById('price-gold').innerHTML = `${formatToman(goldToman)} <span class="lp-change">۰.۶٪+</span>`;
+    document.getElementById('price-silver').innerHTML = `${formatToman(28 * usdToman)} <span class="lp-change down">۰.۵٪-</span>`;
+    document.getElementById('price-platinum').innerHTML = `${formatToman(980 * usdToman)} <span class="lp-change">۱.۰٪+</span>`;
+    document.getElementById('price-palladium').innerHTML = `${formatToman(950 * usdToman)} <span class="lp-change">۰.۴٪+</span>`;
+    // 6. آپدیت کردن نوار زیرنویس (تیکر)
+    tickerItems[0].price = Math.round(usdToman).toLocaleString('fa-IR');
+    tickerItems[1].price = Math.round(eurToman).toLocaleString('fa-IR');
+    tickerItems[2].price = Math.round(jpyToman).toLocaleString('fa-IR');
+    tickerItems[3].price = Math.round(gbpToman).toLocaleString('fa-IR');
+    tickerItems[4].price = formatToman(btcToman);
+    tickerItems[5].price = formatToman(ethToman);
+    tickerItems[6].price = Math.round(usdToman).toLocaleString('fa-IR');
+    tickerItems[7].price = formatToman(dogeToman);
+    tickerItems[16].price = formatToman(goldToman);
+    tickerItems[17].price = formatToman(28 * usdToman);
+    tickerItems[18].price = formatToman(980 * usdToman);
+    tickerItems[19].price = formatToman(950 * usdToman);
+
+    document.getElementById('tickerTrack').innerHTML = buildTickerHTML();
+} catch (error) {
+    console.error('Error fetching live data:', error);
+}
+
+}
+fetchLivePrices(); // فراخوانی هنگام لود صفحه
+setInterval(fetchLivePrices, 60000); // آپدیت هر ۶۰ ثانیه
+renderCharts();
+</script>
+</body>
+</html>
